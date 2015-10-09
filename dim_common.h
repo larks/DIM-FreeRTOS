@@ -2,8 +2,8 @@
 #define __COMMONDEFS
 
 /* Service type definition */
-
-#ifndef ONCE_ONLY
+/* ONCE_ONLY??*/
+#ifndef ONCE_ONLY 
 #define ONCE_ONLY	0x01
 #define TIMED		0x02
 #define MONITORED	0x04
@@ -18,155 +18,99 @@
 
 typedef enum { SRC_NONE, SRC_DIS, SRC_DIC, SRC_DNS, SRC_DNA, SRC_USR }SRC_TYPES;
 
-#ifdef __APPLE__
-#ifndef unix
-#define unix
-#endif
-#endif
-
-#ifdef __Lynx__
-#ifndef unix
-#define unix
-#endif
-#endif
-
-#ifdef unix
-#ifndef __unix__
-#define __unix__
-#endif
-#endif
-
-#ifdef linux
-#ifndef __linux__
-#define __linux__
-#endif
-#endif
-
-#if defined (_WIN64)
-typedef __int64		longlong;
-typedef longlong dim_long;
-#elif defined(WIN32)
-typedef __int64		longlong;
-typedef long	dim_long;
-#elif defined(__linux__)
-typedef long long int longlong;
-typedef long dim_long;
-#else
 #include <sys/types.h> 
 typedef int64_t	longlong;
 typedef long dim_long;
-#endif
 
-#endif
-
-#ifndef OSK
-#	ifdef _OSK
-#		define OSK
-#	endif
-#endif
-
-
-#ifdef __VMS
-#define VMS
 #endif
 
 #ifndef _DIM_PROTO
-#ifndef OSK		/* Temorary hack */
-#	if defined(__cplusplus) /* || (__STDC__ == 1) || defined(_ANSI_EXT) || defined(ultrix) */
-#		define	_DIM_PROTO(func,param)	func param
-#	else
-#		define _DIM_PROTO(func,param)	func ()
-#	endif
-#else
-#	define _DIM_PROTO(func,param)	func ()
-#endif
-#ifdef WIN32
-#ifdef DIMLIB
-#	define _DIM_PROTOE(func,param) __declspec(dllexport) _DIM_PROTO(func,param)
-#	define DllExp __declspec(dllexport)
-#else
-#	define _DIM_PROTOE(func,param) __declspec(dllimport) _DIM_PROTO(func,param)
-#	define DllExp __declspec(dllimport)
-#endif
-#else
-#	define _DIM_PROTOE(func,param) _DIM_PROTO(func,param)
-#	define DllExp
-#endif
+	#define _DIM_PROTO(func,param)	func ()
+	#define _DIM_PROTOE(func,param) _DIM_PROTO(func,param)
+	#define DllExp
 #endif
 
-#if defined (hpux) || defined (__osf__) || defined(_AIX)  || defined(WIN32)
 #ifndef NOTHREADS
-#define NOTHREADS
-#endif
+	#define NOTHREADS
 #endif
 
-#ifndef VMS
-#ifndef WIN32
 #ifdef NOTHREADS
-#ifndef DIMLIB
-#ifndef sleep
-#define sleep(t) dtq_sleep(t)
-#endif
-#endif
-#endif
-#endif
-#endif
-
-#ifdef VMS
-#include <ssdef.h>
-#define DISABLE_AST     long int ast_enable = sys$setast(0);
-#define ENABLE_AST      if (ast_enable == SS$_WASSET) sys$setast(1);
-#define dim_enable()    sys$setast(1);
+	#ifndef DIMLIB
+		#ifndef sleep
+			#define sleep(t) dtq_sleep(t)
+		#endif
+	#endif
 #endif
 
 #ifdef __unix__
-#include <signal.h>
-#include <unistd.h>
+	#include <signal.h>
+	#include <unistd.h>
 
-extern int DIM_Threads_OFF;
+	extern int DIM_Threads_OFF;
 
-#define DISABLE_SIG     sigset_t set, oset; if (DIM_Threads_OFF) {\
-                                                sigemptyset(&set);\
+	#define DISABLE_SIG     sigset_t set, oset; if (DIM_Threads_OFF) {\
+													sigemptyset(&set);\
+													sigaddset(&set,SIGIO);\
+													sigaddset(&set,SIGALRM);\
+													sigprocmask(SIG_BLOCK,&set,&oset);}
+	#define ENABLE_SIG       if (DIM_Threads_OFF) {\
+													sigprocmask(SIG_SETMASK,&oset,0);}
+
+	/*
+	#define DISABLE_SIG     sigset_t set, oset; sigemptyset(&set);\
+							sigaddset(&set,SIGIO);\
+							sigaddset(&set,SIGALRM);\
+							sigprocmask(SIG_BLOCK,&set,&oset);
+	#define ENABLE_SIG      sigprocmask(SIG_SETMASK,&oset,0);
+	*/
+
+	#define DISABLE_AST     DISABLE_SIG DIM_LOCK
+	#define ENABLE_AST      DIM_UNLOCK ENABLE_SIG
+	
+	#ifdef VxWorks
+	#define DIM_LOCK taskLock();
+	#define DIM_UNLOCK taskUnlock();
+	#else
+
+	#ifndef NOTHREADS
+	#include <pthread.h>
+
+	_DIM_PROTOE( void dim_lock,		() );
+	_DIM_PROTOE( void dim_unlock,	() );
+	_DIM_PROTOE( void dim_wait_cond,		() );
+	_DIM_PROTOE( void dim_signal_cond,	() );
+
+	#define DIM_LOCK 	dim_lock();
+	#define DIM_UNLOCK	dim_unlock();
+
+	#else
+	#include <time.h>
+	#define DIM_LOCK
+	#define DIM_UNLOCK
+	#endif
+	#endif
+#endif
+
+#ifdef FreeRTOS
+	#include <signal.h>
+	#include <unistd.h>
+	
+	extern int DIM_Threads_OFF;
+	/* Not sure if the following is fine... */
+	#define DISABLE_SIG     sigset_t set, oset; if (DIM_Threads_OFF) {\
+												sigemptyset(&set);\
 												sigaddset(&set,SIGIO);\
 												sigaddset(&set,SIGALRM);\
 												sigprocmask(SIG_BLOCK,&set,&oset);}
-#define ENABLE_SIG       if (DIM_Threads_OFF) {\
-                                                sigprocmask(SIG_SETMASK,&oset,0);}
-
-/*
-#define DISABLE_SIG     sigset_t set, oset; sigemptyset(&set);\
-						sigaddset(&set,SIGIO);\
-						sigaddset(&set,SIGALRM);\
-						sigprocmask(SIG_BLOCK,&set,&oset);
-#define ENABLE_SIG      sigprocmask(SIG_SETMASK,&oset,0);
-*/
-
-#define DISABLE_AST     DISABLE_SIG DIM_LOCK
-#define ENABLE_AST      DIM_UNLOCK ENABLE_SIG
-
-#ifdef VxWorks
-#define DIM_LOCK taskLock();
-#define DIM_UNLOCK taskUnlock();
-#else
-
-#ifndef NOTHREADS
-#include <pthread.h>
-
-_DIM_PROTOE( void dim_lock,		() );
-_DIM_PROTOE( void dim_unlock,	() );
-_DIM_PROTOE( void dim_wait_cond,		() );
-_DIM_PROTOE( void dim_signal_cond,	() );
-
-#define DIM_LOCK 	dim_lock();
-#define DIM_UNLOCK	dim_unlock();
-
-#else
-#include <time.h>
-#define DIM_LOCK
-#define DIM_UNLOCK
+	#define ENABLE_SIG       if (DIM_Threads_OFF) {\
+													sigprocmask(SIG_SETMASK,&oset,0);}
+	
+	
+	#define DIM_LOCK taskENTER_CRITICAL(); /* Do I need to disable interrupts? */
+	#define DIM_UNLOCK taskEXIT_CRITICAL();
 #endif
-#endif
-#endif
+
+
 #ifdef OSK
 #define INC_LEVEL               1
 #define DEC_LEVEL               (-1)

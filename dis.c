@@ -9,21 +9,10 @@
  *
  */
 
-#ifdef VMS
-#	include <lnmdef.h>
-#	include <ssdef.h>
-#	include <descrip.h>
-#	include <cfortran.h>
-#endif
 /*
 #define DEBUG
 */
 #include <time.h>
-#ifdef VAX
-#include <timeb.h>
-#else
-#include <sys/timeb.h>
-#endif
 
 #define DIMLIB
 #include <dim.h>
