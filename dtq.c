@@ -9,23 +9,20 @@
  */
 
 /* include files */
-#ifndef WIN32
-#ifndef NOTHREADS
-int DIM_Threads_OFF = 0;
-#else
-int DIM_Threads_OFF = 1;
-#endif
-#endif
-#include <signal.h>
+/*#include <signal.h> non-functional in FreeRTOS */
 #include <stdio.h>
 #define DIMLIB
 #include <dim.h>
 
+/**
 #ifdef VxWorks
 #include <time.h>
 #endif
+**/
+/* FreeRTOS Timers FreeRTOS-Source/include/timers.h, FreeRTOS-Source/timers.c */
+#include <timers.h>
 
-#include <sys/timeb.h>
+#include <sys/timeb.h> /*struct timeb{time_t, millitm, timezone, dstflag} ftime(struct timeb *)*/
 
 /* global definitions */
 #define MAX_TIMER_QUEUES	16	/* Number of normal queue's     */
@@ -60,10 +57,14 @@ static int Inside_ast = 0;
 static int Alarm_runs = 0;
 static int sigvec_done = 0;
 
+/*
 #ifdef VxWorks
 static timer_t Timer_id;
 #endif
-
+*/
+/* ifdef FreeRTOS */
+static timer_t TimerHandle_t;
+/* endif */
 static time_t DIM_last_time = 0;
 static int DIM_last_time_millies = 0;
 static int DIM_next_time = 0;
@@ -76,7 +77,7 @@ static int Threads_off = 0;
 
 
 #ifndef WIN32
-
+/*used in dim_thr.c:125: dim_init()*/
 void dim_no_threads()
 {
 	extern void dic_no_threads();

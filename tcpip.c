@@ -222,29 +222,29 @@ int myclosesocket(int path)
 
 int dim_tcpip_init(int thr_flag)
 {
-#ifdef WIN32
-	int addr, flags = 1;
-/*
-    void tcpip_task();
-*/
-	void create_io_thread(void);
-#else
+		#ifdef WIN32
+			int addr, flags = 1;
+		/*
+			void tcpip_task();
+		*/
+			void create_io_thread(void);
+		#else
 	struct sigaction sig_info;
 	sigset_t set;
 	void io_sig_handler();
 	void dummy_io_sig_handler();
 	void tcpip_pipe_sig_handler();
-#endif
+		#endif
 	extern int get_write_tmout();
 
 	if(init_done) 
 		return(1);
 
 	dim_get_write_timeout();
-#ifdef WIN32
-	init_sock();
-	Threads_on = 1;
-#else
+		#ifdef WIN32
+			init_sock();
+			Threads_on = 1;
+		#else
 	if(thr_flag)
 	{
 		Threads_on = 1;
@@ -256,11 +256,11 @@ int dim_tcpip_init(int thr_flag)
 		sigaddset(&set,SIGALRM);
 	    sig_info.sa_handler = io_sig_handler;
 	    sig_info.sa_mask = set;
-#ifndef LYNXOS
-	    sig_info.sa_flags = SA_RESTART;
-#else
+		#ifndef LYNXOS
+				sig_info.sa_flags = SA_RESTART;
+		#else
 	    sig_info.sa_flags = 0;
-#endif
+		#endif
   
 		if( sigaction(SIGIO, &sig_info, 0) < 0 ) 
 		{
@@ -271,11 +271,11 @@ int dim_tcpip_init(int thr_flag)
 	    sigemptyset(&set);
 	    sig_info.sa_handler = tcpip_pipe_sig_handler;
 	    sig_info.sa_mask = set;
-#ifndef LYNXOS 
-	    sig_info.sa_flags = SA_RESTART;
-#else
+		#ifndef LYNXOS 
+				sig_info.sa_flags = SA_RESTART;
+		#else
 	    sig_info.sa_flags = 0;
-#endif
+		#endif
 
 	    if( sigaction(SIGPIPE, &sig_info, 0) < 0 ) {
 			perror( "sigaction(SIGPIPE)" );
@@ -283,7 +283,7 @@ int dim_tcpip_init(int thr_flag)
 	    }
 	  
 	}
-#endif
+		#endif
 	if(Threads_on)
 	{
 #ifdef WIN32
