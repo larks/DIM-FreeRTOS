@@ -145,27 +145,27 @@ static int Debug_on = 1;
 static int Debug_on = 0;
 #endif
 
-_DIM_PROTO( static void dis_insert_request, (int conn_id, DIC_PACKET *dic_packet,
-				  int size, int status ) );
-_DIM_PROTO( int execute_service,	(int req_id) );
-_DIM_PROTO( void execute_command,	(SERVICE *servp, DIC_PACKET *packet) );
-_DIM_PROTO( void register_dns_services,  (int flag) );
-_DIM_PROTO( void register_services,  (DIS_DNS_CONN *dnsp, int flag, int dns_flag) );
-_DIM_PROTO( void std_cmnd_handler,   (dim_long *tag, int *cmnd_buff, int *size) );
-_DIM_PROTO( void client_info,		(dim_long *tag, int **bufp, int *size) );
-_DIM_PROTO( void service_info,	   (dim_long *tag, int **bufp, int *size) );
-_DIM_PROTO( void add_exit_handler,   (int *tag, int *bufp, int *size) );
-_DIM_PROTO( static void exit_handler,	   (int *tag, int *bufp, int *size) );
-_DIM_PROTO( static void error_handler,	   (int conn_id, int severity, int errcode, char *reason) );
-_DIM_PROTO( SERVICE *find_service,   (char *name) );
-_DIM_PROTO( CLIENT *find_client,   (int conn_id) );
-_DIM_PROTO( static int get_format_data, (FORMAT_STR *format_data, char *def) );
-_DIM_PROTO( static int release_conn, (int conn_id, int print_flag, int dns_flag) );
-_DIM_PROTO( SERVICE *dis_hash_service_exists, (char *name) );
-_DIM_PROTO( SERVICE *dis_hash_service_get_next, (int *start, SERVICE *prev, int flag) );
-_DIM_PROTO( static unsigned do_dis_add_service_dns, (char *name, char *type, void *address, int size, 
-								   void (*user_routine)(), dim_long tag, dim_long dnsid ) );
-_DIM_PROTO( static DIS_DNS_CONN *create_dns, (dim_long dnsid) );
+static void dis_insert_request, (int conn_id, DIC_PACKET *dic_packet,
+				  int size, int status );
+int execute_service(int req_id);
+void execute_command(SERVICE *servp, DIC_PACKET *packet);
+void register_dns_services(int flag);
+void register_services(DIS_DNS_CONN *dnsp, int flag, int dns_flag);
+void std_cmnd_handler(dim_long *tag, int *cmnd_buff, int *size);
+void client_info(dim_long *tag, int **bufp, int *size);
+void service_info(dim_long *tag, int **bufp, int *size);
+void add_exit_handler(int *tag, int *bufp, int *size);
+static void exit_handler(int *tag, int *bufp, int *size);
+static void error_handler(int conn_id, int severity, int errcode, char *reason);
+SERVICE *find_service(char *name);
+CLIENT *find_client(int conn_id);
+static int get_format_data(FORMAT_STR *format_data, char *def);
+static int release_conn(int conn_id, int print_flag, int dns_flag);
+SERVICE *dis_hash_service_exists(char *name);
+SERVICE *dis_hash_service_get_next(int *start, SERVICE *prev, int flag);
+static unsigned do_dis_add_service_dns(char *name, char *type, void *address, int size, 
+								   void (*user_routine)(), dim_long tag, dim_long dnsid );
+static DIS_DNS_CONN *create_dns(dim_long dnsid);
 
 void dis_set_debug_on()
 {

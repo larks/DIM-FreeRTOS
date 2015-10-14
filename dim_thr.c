@@ -5,31 +5,31 @@
 #ifndef WIN32
 
 #ifndef NOTHREADS
-#include <pthread.h>
-#include <semaphore.h>
-#ifdef solaris
-#include <synch.h>
-#endif
-#ifdef darwin
-#include <sys/types.h>
-#include <sys/stat.h>
-#endif
+	#include <pthread.h>
+	#include <semaphore.h>
+	#ifdef solaris
+	#include <synch.h>
+	#endif
+	#ifdef darwin
+	#include <sys/types.h>
+	#include <sys/stat.h>
+	#endif
 
-pthread_t IO_thread = 0;
-pthread_t ALRM_thread = 0;
-pthread_t INIT_thread = 0;
-pthread_t MAIN_thread = 0;
-#ifndef darwin
-sem_t DIM_INIT_Sema;
-/*
-sem_t DIM_WAIT_Sema;
-*/
-#else
-sem_t *DIM_INIT_Semap;
-/*
-sem_t *DIM_WAIT_Semap;
-*/
-#endif
+	pthread_t IO_thread = 0;
+	pthread_t ALRM_thread = 0;
+	pthread_t INIT_thread = 0;
+	pthread_t MAIN_thread = 0;
+	#ifndef darwin
+	sem_t DIM_INIT_Sema;
+	/*
+	sem_t DIM_WAIT_Sema;
+	*/
+	#else
+	sem_t *DIM_INIT_Semap;
+	/*
+	sem_t *DIM_WAIT_Semap;
+	*/
+	#endif
 int INIT_count = 0;
 /*
 int WAIT_count = 0;

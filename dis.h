@@ -1,7 +1,7 @@
 #ifndef __DISDEFS
 #define __DISDEFS
 
-/*#include "dim_common.h"*/
+#include "dim_common.h"
 
 int dis_start_serving(char *task_name);
 void dis_stop_serving(void);

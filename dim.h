@@ -26,111 +26,118 @@
 #define MY_OS9			0x100
 #define IT_IS_FLOAT		0x1000
 
+/* VMS specifics */
 #ifdef VMS
-#include <ssdef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <starlet.h>
-#include <time.h>
-#define DIM_NOSHARE noshare
-#define RE_ENABLE_AST   long int ast_enable = sys$setast(1);
-#define RE_DISABLE_AST  if (ast_enable != SS$_WASSET) sys$setast(0);
-#define	vtohl(l)	(l)
-#define	htovl(l)	(l)
+	#include <ssdef.h>
+	#include <stdio.h>
+	#include <stdlib.h>
+	#include <string.h>
+	#include <starlet.h>
+	#include <time.h>
+	#define DIM_NOSHARE noshare
+	#define RE_ENABLE_AST   long int ast_enable = sys$setast(1);
+	#define RE_DISABLE_AST  if (ast_enable != SS$_WASSET) sys$setast(0);
+	#define	vtohl(l)	(l)
+	#define	htovl(l)	(l)
 #ifdef __alpha
-#define MY_FORMAT MY_LITTLE_ENDIAN+AXP_FLOAT
+	#define MY_FORMAT MY_LITTLE_ENDIAN+AXP_FLOAT
 #else
-#define MY_FORMAT MY_LITTLE_ENDIAN+VAX_FLOAT
+	#define MY_FORMAT MY_LITTLE_ENDIAN+VAX_FLOAT
 #endif
 #endif
+/* end VMS specifics */
 
+/* unix specifics */
 #ifdef __unix__
-#include <unistd.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <signal.h>
+	#include <unistd.h>
+	#include <sys/time.h>
+	#include <sys/types.h>
+	#include <netinet/in.h>
+	#include <stdio.h>
+	#include <stdlib.h>
+	#include <string.h>
+	#include <signal.h>
 #ifdef VxWorks
-#include <sigLib.h>
+	#include <sigLib.h>
 #endif
-#define DIM_NOSHARE 
-#define RE_ENABLE_AST   sigset_t set, oset;sigemptyset(&set);sigaddset(&set,SIGIO);sigaddset(&set,SIGALRM);sigprocmask(SIG_UNBLOCK,&set,&oset);
-#define RE_DISABLE_AST  sigprocmask(SIG_SETMASK,&oset,0);
+	#define DIM_NOSHARE 
+	#define RE_ENABLE_AST   sigset_t set, oset;sigemptyset(&set);sigaddset(&set,SIGIO);sigaddset(&set,SIGALRM);sigprocmask(SIG_UNBLOCK,&set,&oset);
+	#define RE_DISABLE_AST  sigprocmask(SIG_SETMASK,&oset,0);
 #ifdef MIPSEL
-#define	vtohl(l)	(l)
-#define	htovl(l)	(l)
-#define MY_FORMAT MY_LITTLE_ENDIAN+IEEE_FLOAT
+	#define	vtohl(l)	(l)
+	#define	htovl(l)	(l)
+	#define MY_FORMAT MY_LITTLE_ENDIAN+IEEE_FLOAT
 #endif
 #ifdef MIPSEB
-#define	vtohl(l)	_swapl(l)
-#define	htovl(l)	_swapl(l)
-#define	vtohs(s)	_swaps(s)
-#define	htovs(s)	_swaps(s)
-#define MY_FORMAT MY_BIG_ENDIAN+IEEE_FLOAT
+	#define	vtohl(l)	_swapl(l)
+	#define	htovl(l)	_swapl(l)
+	#define	vtohs(s)	_swaps(s)
+	#define	htovs(s)	_swaps(s)
+	#define MY_FORMAT MY_BIG_ENDIAN+IEEE_FLOAT
 #endif
-_DIM_PROTO( int _swapl,  (int l) );
-_DIM_PROTO( short _swaps,   (short s) );
+	_DIM_PROTO( int _swapl,  (int l) );
+	_DIM_PROTO( short _swaps,   (short s) );
+#endif 
+/* end unix specifics */
 
-#endif
-
+/* win32 specifics */
 #ifdef WIN32
-#include <windows.h>
-#include <process.h>
-#include <io.h>
-#include <fcntl.h>
-#include <Winsock.h>
-#include <stddef.h>
-#include <stdlib.h>
-#include <stdio.h>
-#define DIM_NOSHARE 
-#define RE_ENABLE_AST     
-#define RE_DISABLE_AST    
+	#include <windows.h>
+	#include <process.h>
+	#include <io.h>
+	#include <fcntl.h>
+	#include <Winsock.h>
+	#include <stddef.h>
+	#include <stdlib.h>
+	#include <stdio.h>
+	#define DIM_NOSHARE 
+	#define RE_ENABLE_AST     
+	#define RE_DISABLE_AST    
 #ifdef MIPSEL
-#define	vtohl(l)	(l)
-#define	htovl(l)	(l)
-#define MY_FORMAT MY_LITTLE_ENDIAN+IEEE_FLOAT
+	#define	vtohl(l)	(l)
+	#define	htovl(l)	(l)
+	#define MY_FORMAT MY_LITTLE_ENDIAN+IEEE_FLOAT
 #endif
 #ifdef MIPSEB
-#define	vtohl(l)	_swapl(l)
-#define	htovl(l)	_swapl(l)
-#define	vtohs(s)	_swaps(s)
-#define	htovs(s)	_swaps(s)
-#define MY_FORMAT MY_BIG_ENDIAN+IEEE_FLOAT
+	#define	vtohl(l)	_swapl(l)
+	#define	htovl(l)	_swapl(l)
+	#define	vtohs(s)	_swaps(s)
+	#define	htovs(s)	_swaps(s)
+	#define MY_FORMAT MY_BIG_ENDIAN+IEEE_FLOAT
 #endif
-_DIM_PROTO( int _swapl,  (int l) );
-_DIM_PROTO( short _swaps,   (short s) );
+	_DIM_PROTO( int _swapl,  (int l) );
+	_DIM_PROTO( short _swaps,   (short s) );
 #endif
+/* end win32 specifics */
 
+/* OS9 specifics */
 #ifdef OSK
-#include <types.h>
+	#include <types.h>
 #ifndef _UCC
-#include <machine/types.h>
+	#include <machine/types.h>
 #else
-#define register
+	#define register
 #endif
-#include <inet/in.h>
-#include <time.h>
-#include <stdio.h>
-#include <string.h>
-#define DIM_NOSHARE 
-#define RE_ENABLE_AST      sigmask(DEC_LEVEL);
-#define RE_DISABLE_AST     sigmask(INC_LEVEL);
-#define	vtohl(l)	_swapl(l)
-#define	htovl(l)	_swapl(l)
-#define	vtohs(s)	_swaps(s)
-#define	htovs(s)	_swaps(s)
-#define MY_FORMAT MY_BIG_ENDIAN+IEEE_FLOAT+MY_OS9
-typedef unsigned short	ushort;
-_DIM_PROTO( char *getenv,  (char *name) );
-_DIM_PROTO( void *malloc,  (unsigned size) );
-_DIM_PROTO( void *realloc, (void *ptr, unsigned size) );
-_DIM_PROTO( int _swapl,   (int l) );
-_DIM_PROTO( short _swaps,   (short s) );
+	#include <inet/in.h>
+	#include <time.h>
+	#include <stdio.h>
+	#include <string.h>
+	#define DIM_NOSHARE 
+	#define RE_ENABLE_AST      sigmask(DEC_LEVEL);
+	#define RE_DISABLE_AST     sigmask(INC_LEVEL);
+	#define	vtohl(l)	_swapl(l)
+	#define	htovl(l)	_swapl(l)
+	#define	vtohs(s)	_swaps(s)
+	#define	htovs(s)	_swaps(s)
+	#define MY_FORMAT MY_BIG_ENDIAN+IEEE_FLOAT+MY_OS9
+	typedef unsigned short	ushort;
+	_DIM_PROTO( char *getenv,  (char *name) );
+	_DIM_PROTO( void *malloc,  (unsigned size) );
+	_DIM_PROTO( void *realloc, (void *ptr, unsigned size) );
+	_DIM_PROTO( int _swapl,   (int l) );
+	_DIM_PROTO( short _swaps,   (short s) );
 #endif
+/* end OS9 specifics */
 
 #define	TRUE	1
 #define	FALSE	0
@@ -140,31 +147,37 @@ _DIM_PROTO( short _swaps,   (short s) );
 #define SEEK_PORT	0			/* server should seek a port */
 
 #define MIN_BIOCNT	 	50
-#ifdef OSK
-#define DIS_DNS_TMOUT_MIN	5
-#define DIS_DNS_TMOUT_MAX	10
-#define DIC_DNS_TMOUT_MIN	5
-#define DIC_DNS_TMOUT_MAX	10
-#define MAX_SERVICE_UNIT 	32
-#define MAX_REGISTRATION_UNIT 100
-#define CONN_BLOCK		32
-#define MAX_CONNS		32
-#define ID_BLOCK		64
-#define TCP_RCV_BUF_SIZE	4096
-#define TCP_SND_BUF_SIZE	4096
-#else
-#define DIS_DNS_TMOUT_MIN	5
-#define DIS_DNS_TMOUT_MAX	10
-#define DIC_DNS_TMOUT_MIN	5
-#define DIC_DNS_TMOUT_MAX	10
-#define MAX_SERVICE_UNIT 	100
-#define MAX_REGISTRATION_UNIT 100
-#define CONN_BLOCK		256
-#define MAX_CONNS		1024
-#define ID_BLOCK		512
-#define TCP_RCV_BUF_SIZE	16384/*32768*//*65536*/
-#define TCP_SND_BUF_SIZE	16384/*32768*//*65536*/
+
+/*
+ * Networking stuff
+ * Timeouts, buffer sizes, max connections, ...
+*/
+#ifdef OSK /* OS9 specifics */
+	#define DIS_DNS_TMOUT_MIN	5
+	#define DIS_DNS_TMOUT_MAX	10
+	#define DIC_DNS_TMOUT_MIN	5
+	#define DIC_DNS_TMOUT_MAX	10
+	#define MAX_SERVICE_UNIT 	32
+	#define MAX_REGISTRATION_UNIT 100
+	#define CONN_BLOCK		32
+	#define MAX_CONNS		32
+	#define ID_BLOCK		64
+	#define TCP_RCV_BUF_SIZE	4096 /* 2*4 kB -- might be ok? all of it is probably not being used */
+	#define TCP_SND_BUF_SIZE	4096
+#else /* Other than OS9 */
+	#define DIS_DNS_TMOUT_MIN	5
+	#define DIS_DNS_TMOUT_MAX	10
+	#define DIC_DNS_TMOUT_MIN	5
+	#define DIC_DNS_TMOUT_MAX	10
+	#define MAX_SERVICE_UNIT 	100
+	#define MAX_REGISTRATION_UNIT 100
+	#define CONN_BLOCK		256
+	#define MAX_CONNS		1024
+	#define ID_BLOCK		512
+	#define TCP_RCV_BUF_SIZE	16384/*32768*//*65536*/ /* 16 kB -- to much for our SF2 */
+	#define TCP_SND_BUF_SIZE	16384/*32768*//*65536*/ /* 16 kB*/
 #endif
+
 #define DID_DNS_TMOUT_MIN	5
 #define DID_DNS_TMOUT_MAX	10
 /*
@@ -190,9 +203,9 @@ typedef enum { DNS_DIS_REGISTER, DNS_DIS_KILL, DNS_DIS_STOP,
 typedef enum { RD_HDR, RD_DATA, RD_DUMMY } CONN_STATE;
 typedef enum { NOSWAP, SWAPS, SWAPL, SWAPD} SWAP_TYPE;
 
-#define DECNET			0		/* Decnet as transport layer */
+#define DECNET			0		/* Decnet as transport layer */ /* VMS specific network protocol */
 #define TCPIP			1		/* Tcpip as transport layer  */
-#define BOTH			2		/* Both protocols allowed    */
+#define BOTH			2		/* Both protocols allowed    */ /* Should only allow tcpip */
 
 #define	STA_DISC		(-1)		/* Connection lost           */
 #define	STA_DATA		0		/* Data received             */
@@ -224,7 +237,7 @@ typedef struct{
 	int code;
 	char node[MAX_NODE_NAME];
 	char task[MAX_TASK_NAME];
-} DNA_NET;
+} DNA_NET; /*Windows DNA?*/
 
 /* Packet sent by the client to the server */
 typedef struct{
