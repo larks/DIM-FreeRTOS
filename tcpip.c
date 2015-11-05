@@ -17,24 +17,8 @@
 /* Can not be moved from here ! */
 #include <dim_tcpip.h>
 
-#ifdef WIN32
-#define ioctl ioctlsocket
-
-#define closesock myclosesocket
-#define readsock recv
-#define writesock send
-
-#define EINTR WSAEINTR
-#define EADDRNOTAVAIL WSAEADDRNOTAVAIL
-#define EWOULDBLOCK WSAEWOULDBLOCK
-#define ECONNREFUSED WSAECONNREFUSED
-#define HOST_NOT_FOUND	WSAHOST_NOT_FOUND
-#define NO_DATA	WSANO_DATA
-
-#else
-/*
-#define closesock(s) shutdown(s,2)
-*/
+/*#ifdef WIN32*/
+/*#else*/
 #define closesock(s) close(s)
 #define readsock(a,b,c,d) read(a,b,c)
 
@@ -66,8 +50,7 @@ typedef int pid_t;
 #include <sys/ioctl.h>
 #include <errno.h>
 #include <netdb.h>
-
-#endif
+/* Endif */
 
 #include <stdio.h>
 #include <time.h>
@@ -176,49 +159,6 @@ int dim_get_read_buffer_size()
 {
 	return(Read_buffer_size);
 }
-
-#ifdef WIN32
-int init_sock()
-{
-	WORD wVersionRequested;
-	WSADATA wsaData;
-	int err;
-	static int sock_init_done = 0;
-
-	if(sock_init_done) return(1);
- 	wVersionRequested = MAKEWORD( 2, 0 );
-	err = WSAStartup( wVersionRequested, &wsaData );
-
-	if ( err != 0 ) 
-	{
-    	return(0);
-	}
-
-	/* Confirm that the WinSock DLL supports 2.0.*/
-	/* Note that if the DLL supports versions greater    */
-	/* than 2.0 in addition to 2.0, it will still return */
-	/* 2.0 in wVersion since that is the version we      */
-	/* requested.                                        */
-
-	if ( LOBYTE( wsaData.wVersion ) != 2 ||
-        HIBYTE( wsaData.wVersion ) != 0 ) 
-	{
-	    WSACleanup( );
-    	return(0); 
-	}
-	sock_init_done = 1;
-	return(1);
-}
-
-int myclosesocket(int path)
-{
-	int code, ret;
-	code = WSAGetLastError();
-	ret = closesocket(path);
-	WSASetLastError(code);
-	return ret;
-}
-#endif
 
 int dim_tcpip_init(int thr_flag)
 {

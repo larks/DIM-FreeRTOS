@@ -1051,6 +1051,7 @@ static DIS_DNS_CONN *create_dns(dim_long dnsid)
 	return dnsp;
 }
 
+/* 1. */
 void dis_dns_init()
 {
 	static int done = 0;

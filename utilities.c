@@ -19,13 +19,15 @@
 #define DIMLIB
 #include <dim.h>
 
+/* is this really useful?? maybe...*/
 int get_proc_name(char *proc_name)
 {
-#ifndef VxWorks
-	sprintf( proc_name, "%d", getpid() );
-#else
-	sprintf( proc_name, "%d", taskIdSelf() );      
-#endif
+	TaskStatus_t *pxTaskStatus;
+	pxTaskStatus = pvPortMalloc( sizeof( TaskStatus_t ) );
+	if( pxTaskStatusArray != NULL ){
+		sprintf(proc_name, "%d", pxTaskStatus.xTaskNumber);
+		vPortFree(pxTaskStatus); /* Free memory */
+	}
 	return(1);
 }
 
@@ -131,70 +133,72 @@ char *ptr;
 #endif
 }
 
-void dim_print_date_time()
-{
-	time_t t;
-	char str[128];
-
-	t = time((time_t *)0);
-/*
-#ifdef WIN32
-	strcpy(str, ctime(&t));
-#else
-#ifdef LYNXOS
-	ctime_r(&t, str, 128);
-#else
-	ctime_r(&t, str);
-#endif
-#endif
-*/
-	my_ctime(&t, str, 128);
-	str[(int)strlen(str)-1] = '\0';
-	printf("PID %d - ",getpid());
-	printf("%s - ",str );
-}
-
-void dim_print_date_time_millis()
-{
-	int millies;
-
-#ifdef WIN32
-	struct timeb timebuf;
-#else
-	struct timeval tv;
-	struct timezone *tz;
-#endif
-
-#ifdef WIN32
-	ftime(&timebuf);
-	millies = timebuf.millitm;
-#else
-	tz = 0;
-	gettimeofday(&tv, tz);
-	millies = (int)tv.tv_usec / 1000;
-#endif
-	dim_print_date_time();
-	printf("milliseconds: %d ", millies);
-}
-
-void dim_print_msg(char *msg, int severity)
-{
-	dim_print_date_time();
-	switch(severity)
+#if 0
+	void dim_print_date_time()
 	{
-		case 0: printf("(INFO) ");
-			break;
-		case 1: printf("(WARNING) ");
-			break;
-		case 2: printf("(ERROR) ");
-			break;
-		case 3: printf("(FATAL) ");
-			break;
-	}
-	printf("%s\n",msg);
-	fflush(stdout);
-}
+		time_t t;
+		char str[128];
 
+		t = time((time_t *)0);
+	/*
+	#ifdef WIN32
+		strcpy(str, ctime(&t));
+	#else
+	#ifdef LYNXOS
+		ctime_r(&t, str, 128);
+	#else
+		ctime_r(&t, str);
+	#endif
+	#endif
+	*/
+		my_ctime(&t, str, 128);
+		str[(int)strlen(str)-1] = '\0';
+		printf("PID %d - ",getpid());
+		printf("%s - ",str );
+	}
+	
+	void dim_print_date_time_millis()
+	{
+		int millies;
+
+	#ifdef WIN32
+		struct timeb timebuf;
+	#else
+		struct timeval tv;
+		struct timezone *tz;
+	#endif
+
+	#ifdef WIN32
+		ftime(&timebuf);
+		millies = timebuf.millitm;
+	#else
+		tz = 0;
+		gettimeofday(&tv, tz);
+		millies = (int)tv.tv_usec / 1000;
+	#endif
+		dim_print_date_time();
+		printf("milliseconds: %d ", millies);
+	}
+
+	void dim_print_msg(char *msg, int severity)
+	{
+		dim_print_date_time();
+		switch(severity)
+		{
+			case 0: printf("(INFO) ");
+				break;
+			case 1: printf("(WARNING) ");
+				break;
+			case 2: printf("(ERROR) ");
+				break;
+			case 3: printf("(FATAL) ");
+				break;
+		}
+		printf("%s\n",msg);
+		fflush(stdout);
+	}
+#endif /*if 0*/
+/* TODO: remove */
 void dim_panic( char *s )
 {
 	printf( "\n\nDNA library panic: %s\n\n", s );
@@ -203,18 +207,23 @@ void dim_panic( char *s )
 
 int get_dns_node_name( char *node_name )
 {
+	*node_name = DIM_DNS_NODE;
+	return 1;
+/*
 	char	*p;
-
 	if( (p = getenv("DIM_DNS_NODE")) == NULL )
 		return(0);
 	else {
 		strcpy( node_name, p );
 		return(1);
 	}
+*/
 }
 
 int get_dns_port_number()
 {
+	return DNS_PORT;
+/*
 	char	*p;
 
 	if( (p = getenv("DIM_DNS_PORT")) == NULL )
@@ -222,29 +231,32 @@ int get_dns_port_number()
 	else {
 		return(atoi(p));
 	}
+*/
 }
 
-int dim_get_env_var( char *env_var, char *value, int len )
-{
-	char	*p;
-	int tot, sz;
+#if 0
+	int dim_get_env_var( char *env_var, char *value, int len )
+	{
+		char	*p;
+		int tot, sz;
 
-	if( (p = getenv(env_var)) == NULL )
-		return(0);
-	else {
-		tot = (int)strlen(p)+1;
-		if(value != 0)
-		{
-			sz = tot;
-			if(sz > len)
-				sz = len;
-			strncpy(value, p, (size_t)sz);
-			if((sz == len) && (len > 0))
-				value[sz-1] = '\0';
+		if( (p = getenv(env_var)) == NULL )
+			return(0);
+		else {
+			tot = (int)strlen(p)+1;
+			if(value != 0)
+			{
+				sz = tot;
+				if(sz > len)
+					sz = len;
+				strncpy(value, p, (size_t)sz);
+				if((sz == len) && (len > 0))
+					value[sz-1] = '\0';
+			}
+			return(tot);
 		}
-		return(tot);
 	}
-}
+#endif /* if 0 */
 
 int get_dns_accepted_domains( char *domains )
 {

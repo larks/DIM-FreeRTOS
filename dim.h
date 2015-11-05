@@ -203,7 +203,7 @@ typedef enum { DNS_DIS_REGISTER, DNS_DIS_KILL, DNS_DIS_STOP,
 typedef enum { RD_HDR, RD_DATA, RD_DUMMY } CONN_STATE;
 typedef enum { NOSWAP, SWAPS, SWAPL, SWAPD} SWAP_TYPE;
 
-#define DECNET			0		/* Decnet as transport layer */ /* VMS specific network protocol */
+#define DECNET			0		/* Decnet as transport layer */ /* VMS specific network protocol, never referenced in code */
 #define TCPIP			1		/* Tcpip as transport layer  */
 #define BOTH			2		/* Both protocols allowed    */ /* Should only allow tcpip */
 
@@ -232,12 +232,12 @@ typedef struct{
 	short flags;     /* bits 0-1 is type of swap, bit 4 id float conversion */
 }FORMAT_STR;
 
-/* Packet sent by the client to the server inside DNA */
+/* Packet sent by the client to the server inside DNA (also server?) */
 typedef struct{
 	int code;
 	char node[MAX_NODE_NAME];
 	char task[MAX_TASK_NAME];
-} DNA_NET; /*Windows DNA?*/
+} DNA_NET; /**/
 
 /* Packet sent by the client to the server */
 typedef struct{
@@ -251,7 +251,7 @@ typedef struct{
 } DIC_PACKET;
 
 #define DIC_HEADER		(MAX_NAME + 20)
-
+ 
 /* Packets sent by the server to the client */
 typedef struct{
 	int size;
@@ -457,9 +457,9 @@ typedef struct {
 	char long_task_name[MAX_NAME];
 } DNS_CONNECTION;
 
-extern DllExp DIM_NOSHARE DNS_CONNECTION *Dns_conns;
+/*extern DllExp DIM_NOSHARE DNS_CONNECTION *Dns_conns;*/
 
-extern DllExp DIM_NOSHARE int Curr_N_Conns;
+/*extern DllExp DIM_NOSHARE int Curr_N_Conns;*/
 
 /* Client definitions needed by dim_jni.c (from H.Essel GSI) */
 typedef enum {

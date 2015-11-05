@@ -28,8 +28,8 @@
 typedef struct {
 	char node_name[MAX_NODE_NAME];
 	char task_name[MAX_TASK_NAME];
-	int port;
-	SRC_TYPES src_type;
+	int port; 
+	SRC_TYPES src_type; /* SRC_NONE, SRC_DIS, SRC_DIC, SRC_DNS, SRC_DNA, SRC_USR */
 	time_t last_used;
 } PENDING_OPEN;
 
@@ -599,7 +599,7 @@ int dna_get_node_task(int conn_id, char *node, char *task)
 		node[0] = '\0';
 	return(1);
 }
-
+/* RCU2: End of server routines */
 
 /* Client Routines */
 
