@@ -14,9 +14,11 @@
 #include <dim.h>
 #include <dis.h>
 
+/*
 #ifndef WIN32
 #include <netdb.h>
 #endif
+*/
 /*
 #define MAX_HASH_ENTRIES 5000
 */
