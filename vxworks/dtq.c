@@ -52,31 +52,6 @@ static timer_t Timer_id;
  * DTQ routines
  */
 
-#ifndef VxWorks
-
-int dtq_init()
-{
-
-  struct sigaction sig_info;
-  sigset_t set;
-
-	if( !DTQ_Initialized ) {
-	  sigemptyset(&set);
-	  sigaddset(&set,SIGIO);
-	  sig_info.sa_handler = ast_rout;
-	  sig_info.sa_mask = set;
-	  sig_info.sa_flags = SA_RESTART;
-	  
-	  if( sigaction(SIGALRM, &sig_info, 0) < 0 ) {
-		perror( "sigaction(SIGALRM)" );
-		exit(0);
-	  }
-	  DTQ_Initialized = TRUE;
-	}
-}
-
-#else
-
 #define VX_TASK_PRIO 150
 #define VX_TASK_SSIZE 20000
 
@@ -133,7 +108,6 @@ int secs;
 	timer_settime(Timer_id, 0, &val, &oval);
 	return(oval.it_value.tv_sec);
 }
-#endif
 
 int dtq_create()
 {
