@@ -26,7 +26,7 @@
 #include <errno.h>
 #ifndef VxWorks
 #include <netdb.h>
-#else
+#else /* VxWorks */
 #include <ioLib.h>
 #include <sockLib.h>
 #include <hostLib.h>
@@ -48,115 +48,6 @@ static int	queue_id;
 void (*FD_rout)();
 void *FD_par; 
 */
-
-#ifdef solaris
-
-void *dim_thread(void *tag)
-{
-  sigset_t set;
-
-  sigemptyset(&set);
-  sigaddset(&set,SIGALRM);
-  sigaddset(&set,SIGIO);
-  sigprocmask(SIG_UNBLOCK,&set,0);
-  while(1)
-    {
-      pause();
-    }
-}
-
-void dim_init_threads()
-{
-	DISABLE_AST
-	thr_create(NULL,0,dim_thread, 0, 0, NULL);
-
-}
-
-#endif
-
-#ifndef VxWorks
-
-static void tcpip_init()
-{
-
-  struct sigaction sig_info;
-  sigset_t set;
-	static void io_sig_handler();
-	static void pipe_sig_handler();
-
-  sigemptyset(&set);
-  /*
-  sigaddset(&set,SIGALRM);
-  */
-  sig_info.sa_handler = io_sig_handler;
-  sig_info.sa_mask = set;
-  sig_info.sa_flags = SA_RESTART;
-  
-        if( sigaction(SIGIO, &sig_info, 0) < 0 ) {
-		perror( "sigaction(SIGIO)" );
-		exit(0);
-	}
-  sigemptyset(&set);
-  sig_info.sa_handler = pipe_sig_handler;
-  sig_info.sa_mask = set;
-  sig_info.sa_flags = SA_RESTART;
-  
-        if( sigaction(SIGPIPE, &sig_info, 0) < 0 ) {
-		perror( "sigaction(SIGPIPE)" );
-		exit(0);
-	}
-
-	if( (queue_id = dtq_create()) == 0 ) {
-		printf( "No more timer queues!!\n" );
-		exit(0);
-	}
-	Tcpip_init_done = TRUE;
-}
-
-
-static int enable_sig( conn_id )
-int conn_id;
-{
-	int pid, ret = 1, flags = 1;
-
-	/*
-    if(!FD_rout)
-    {
-    */
-#ifdef SIGDBG
-	printf( "EN-able signal on %d\n", conn_id );
-#endif
-
-	if( !Tcpip_init_done )
-		tcpip_init();
-
-	pid = getpid();
-	pid = -pid;
-	ret = ioctl(Net_conns[conn_id].channel, SIOCSPGRP, (int)&pid );
-	if(ret == -1)
-		return(ret);
-
-	ret = ioctl(Net_conns[conn_id].channel, FIOASYNC, &flags );
-	/*
-    }
-    */
-    return(ret);
-}
-
-
-static int disable_sig( conn_id )
-int conn_id;
-{
-	int	flags = 0, ret = 1;
-
-#ifdef SIGDBG
-	printf( "DIS-able signal on %d\n", conn_id );
-#endif
-	ret = ioctl(Net_conns[conn_id].channel, FIOASYNC, &flags );
-	return(ret);
-}
-
-#else
 
 #define VX_TASK_PRIO 150
 #define VX_TASK_SSIZE 20000
@@ -191,8 +82,6 @@ int conn_id;
       return(1);
 }
 
-
-#endif
 
 static void dump_list()
 {
@@ -274,9 +163,11 @@ int conn_id;
 	cur_time = time(NULL);
 	if( cur_time - Net_conns[conn_id].last_used > Net_conns[conn_id].timeout )
 	{
+/*
 #ifndef VxWorks
 		dna_test_write( conn_id );
 #endif
+*/
 	}
 }
 
@@ -373,67 +264,6 @@ int conn_id;
 				      conn_id, TCPIP );
 }
 
-#ifndef VxWorks
-
-static void io_sig_handler( num )
-int num;
-{
-	/* We got an IO signal, lets find out what is happening and
-	 * call the right routine to handle the situation.
-	 */
-	fd_set	rfds;
-	int	conn_id, ret, rcount, count;
-	struct timeval	timeout;
-
-#ifdef LISTDBG
-	dump_list();
-#endif
-	
-	timeout.tv_sec = 0;		/* Don't wait, just poll */
-	timeout.tv_usec = 0;
-	list_to_fds( &rfds );
-	if( (ret = select(FD_SETSIZE, &rfds, NULL, NULL, &timeout)) < 1 ) {
-		if( ret < 0 ) perror( "select" );
-		{
-		    return;
-		}
-	}
-	/*
-	{
-		sigset_t oset;
-		sigprocmask(0,0,&oset);
-		printf("MASK = %x\n",oset.sigset[0] __sigbits);
-	}
-	*/
-		while( ret = fds_get_entry( &rfds, &conn_id ) > 0 ) {
-		  /*
-		printf("fds_get_entry returned %d\n",ret);
-		*/
-/*
-		disable_sig( conn_id );
-*/
-		if( Net_conns[conn_id].reading )
-		{
-			do
-			{
-				do_read( conn_id );
-				ioctl( Net_conns[conn_id].channel, FIONREAD, (int)&count );
-/*
-				printf("Read %d, But there was still %d more to read...\n",
-					totlen,count);
-*/
-			}while(count > 0 );
-		}
-		else
-		{
-			do_accept( conn_id );
-		}
-		FD_CLR( Net_conns[conn_id].channel, &rfds );
-	}
-}
-
-#else
-
 void io_handler_task( main_conn_id )
 int main_conn_id;
 {
@@ -493,8 +323,6 @@ int main_conn_id;
 	    }
          }
 }
-
-#endif
 
 void dim_io(fd)
 int fd;
@@ -559,24 +387,7 @@ void (*ast_routine)();
 	{
 	    printf("START_READ - enable_sig returned -1\n");
 	    return(0);
-	}
-	
-#ifdef solaris	
-
-	{
-	  int count = 0;
-	  DISABLE_AST
-	  do
-	  {
-	    ioctl( Net_conns[conn_id].channel, FIONREAD, &count );
-	    if(!count)
-	      break;
-	    do_read( conn_id );
-	  }while(count > 0 );
-	  ENABLE_AST
-	}
-#endif	
-	 
+	}	
 	return(1);
 }
 
@@ -604,17 +415,9 @@ int port;
 	       */
 	if(!Tcpip_init_done)
 	  tcpip_init();
-#ifndef VxWorks
-	if( (host = gethostbyname(node)) == (struct hostent *)0 ) 
-	{
-	  perror("gethostbyname");
-		return(0);
-	}
-#else
 	strcpy(tmp_node,node);
 	*(strchr(tmp_node,'.')) = '\0';
        	host_addr = hostGetByName(tmp_node);
-#endif
 
 	if( (path = socket(AF_INET, SOCK_STREAM, 0)) == -1 ) 
 	{
@@ -633,7 +436,7 @@ int port;
 	}
 
 	sockname.sin_family = PF_INET;
-#ifndef VxWorks
+#ifndef VxWorks /* XXX: Not sure... */
 	sockname.sin_addr = *((struct in_addr *) host->h_addr);
 #else
 	sockname.sin_addr = *((struct in_addr *) &host_addr);
@@ -888,15 +691,3 @@ int code;
 {
 	perror( "tcpip" );
 }
-
-
-
-
-
-
-
-
-
-
-
-
