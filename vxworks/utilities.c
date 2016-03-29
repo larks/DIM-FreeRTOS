@@ -24,11 +24,7 @@
 int get_proc_name(proc_name)
 char *proc_name;
 {
-#ifndef VxWorks
-	sprintf( proc_name, "%d", getpid() );
-#else
 	sprintf( proc_name, "%d", taskIdSelf() );      
-#endif
 	return(1);
 }
 
@@ -36,20 +32,8 @@ char *proc_name;
 int get_node_name(node_name)
 char *node_name;
 {
-#ifndef VxWorks
-struct hostent *host;
-#endif
 char	*p;
-
 	gethostname(node_name, MAX_NODE_NAME);
-#ifndef VxWorks
-	if(!strchr(node_name,'.'))
-	{
-		if ((host = gethostbyname(node_name)) == (struct hostent *)0) 
-			return(0);
-		strcpy(node_name,host->h_name);
-	}
-#endif
 	if(!strchr(node_name,'.'))
 	{
 		if( (p = getenv("DIM_HOST_NODE")) == NULL )
@@ -91,10 +75,3 @@ char *node_name;
 		return(1);
 	}
 }
-
-
-
-
-
-
-
