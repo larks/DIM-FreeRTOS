@@ -1,0 +1,54 @@
+
+
+value
+    color_icon: exported icon(color_table = all_colors, 
+        '                ',
+        '                ',
+        '                ',
+        '                ',
+        '                ',
+        '                ',
+        '                ',
+        '                ',
+        '                ',
+        '                ',
+        '                ',
+        '                ',
+        '                ',
+        '                ',
+        '                ',
+        '                ');
+    green: exported color('Medium Aquamarine');
+    dark_green: exported color('Dark Green');
+    blue: exported color('Turquoise');
+    dark_blue: exported color('Royal Blue');
+    red: exported color('Red');
+    dark_red: exported color('Red');
+    yellow: exported color('Yellow');
+    dark_yellow: exported color('Orange');
+    black: exported color('Black');
+    orange: exported color('Orange');
+    white: exported color('White');
+!    green: exported rgb(30146,61602,48386);
+!    dark_green: exported rgb(0,43253,34733);
+!    blue: exported rgb(36699,57670,65049);
+!    dark_blue: exported rgb(0,42597,45219);
+!    red: exported rgb(60488,24706,24706);
+!    dark_red: exported rgb(51117,0,0);
+!    yellow: exported rgb(65535,47158,27524);
+!    dark_yellow: exported rgb(65535,41287,15728);
+!    black: exported rgb(0,0,0);
+!    orange: exported rgb(65535,40630,22718);
+!    white: exported rgb(65535,65535,65535);
+    all_colors: color_table(background color = ' ', 
+        foreground color = '*', 
+        green = 'a', 
+        blue = 'b', 
+        red = 'c', 
+        yellow = 'd', 
+        dark_green = 'e', 
+        dark_blue = 'f', 
+        dark_red = 'g', 
+        dark_yellow = 'h',
+		orange = 'i',
+		white = 'j');

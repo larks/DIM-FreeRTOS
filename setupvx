@@ -1,0 +1,8 @@
+dbgInit
+cd "dim"
+<ld_dim
+taskDeleteHookAdd(DIMDestroy)
+putenv("DIM_DNS_NODE=daq.star.bnl.gov")
+cd "test"
+ld <test_server
+ld <test_client

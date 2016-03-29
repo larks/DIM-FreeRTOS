@@ -1,0 +1,725 @@
+module vuitDummy
+    names = case_sensitive
+
+include file 'colors.uil';
+
+include file 'icons.uil';
+
+object
+    main_window: XmMainWindow 
+        {
+        arguments
+            {
+            XmNborderWidth = 1;
+            };
+        controls
+            {
+            XmMenuBar main_menu;
+            XmForm row;
+            };
+        };
+    view_window: XmScrolledWindow 
+        {
+        arguments
+            {
+            XmNtopAttachment = XmATTACH_WIDGET;
+            XmNtopWidget = XmLabel display_type;
+            XmNtopOffset = 0;
+            XmNleftAttachment = XmATTACH_FORM;
+            XmNleftOffset = 0;
+            XmNrightAttachment = XmATTACH_FORM;
+            XmNrightOffset = 0;
+            XmNbottomAttachment = XmATTACH_FORM;
+            XmNbottomOffset = 0;
+            XmNscrollBarDisplayPolicy = XmAS_NEEDED;
+            XmNscrollingPolicy = XmAUTOMATIC;
+            };
+        controls
+            {
+            XmRowColumn matrix0;
+            XmRowColumn matrix1;
+            };
+        callbacks
+            {
+            MrmNcreateCallback = procedures
+                {
+                create_main(0);
+                };
+            };
+        };
+    display_type: XmLabel 
+        {
+        arguments
+            {
+            XmNtopAttachment = XmATTACH_FORM;
+            XmNtopOffset = 0;
+            XmNleftAttachment = XmATTACH_FORM;
+            XmNleftOffset = 0;
+            XmNrightAttachment = XmATTACH_FORM;
+            XmNrightOffset = 0;
+            XmNalignment = XmALIGNMENT_CENTER;
+            XmNfontList = font_table(font('-*-TIMES-BOLD-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNborderWidth = 0;
+            XmNlabelString = 
+		       	compound_string(" ",separate=true) &
+	        	compound_string(" ");
+            };
+        callbacks
+            {
+            MrmNcreateCallback = procedures
+                {
+                create_label(0);
+                };
+            };
+        };
+    matrix0: XmRowColumn 
+        {
+        arguments
+            {
+            XmNborderWidth = 0;
+            XmNorientation = XmVERTICAL;
+            XmNnumColumns = 4;
+            XmNpacking = XmPACK_COLUMN;
+            };
+        controls
+            {
+            };
+        callbacks
+            {
+            MrmNcreateCallback = procedures
+                {
+                create_matrix(0);
+                };
+            };
+        };
+    matrix1: XmRowColumn 
+        {
+        arguments
+            {
+            XmNborderWidth = 0;
+            XmNorientation = XmVERTICAL;
+            XmNnumColumns = 4;
+            XmNpacking = XmPACK_COLUMN;
+!			XmNmappedWhenManaged = false;
+            };
+        controls
+            {
+            };
+        callbacks
+            {
+            MrmNcreateCallback = procedures
+                {
+                create_matrix(1);
+                };
+            };
+        };
+    main_menu: XmMenuBar 
+        {
+        arguments
+            {
+            XmNmenuHelpWidget = XmCascadeButton help_button;
+            };
+        controls
+            {
+            XmCascadeButton file_button;
+            XmCascadeButton view_button;
+            XmCascadeButton cmnd_button;
+            XmCascadeButton help_button;
+            };
+        };
+    file_button: XmCascadeButton 
+        {
+        arguments
+            {
+            XmNfontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNlabelString = 
+            compound_string("File");
+            };
+        controls
+            {
+            XmPulldownMenu 
+                {
+                arguments
+                    {
+                    XmNborderWidth = 1;
+                    };
+                controls
+                    {
+                    XmPushButton exit_button;
+                    };
+                };
+            };
+        };
+    exit_button: XmPushButton 
+        {
+        arguments
+            {
+            XmNfontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNlabelString = 
+            compound_string("Exit");
+            };
+        callbacks
+            {
+            XmNactivateCallback = procedures
+                {
+                did_exit();
+                };
+            };
+        };
+    cmnd_button: XmCascadeButton 
+        {
+        arguments
+            {
+            XmNfontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNlabelString = 
+            compound_string("Command");
+            };
+        controls
+            {
+            XmPulldownMenu 
+                {
+                arguments
+                    {
+                    XmNborderWidth = 1;
+                    };
+                controls
+                    {
+                    XmPushButton print_state;
+                    XmPushButton debug_on;
+                    XmPushButton debug_off;
+                    XmPushButton print_hash_table;
+                    XmPushButton kill_servers;
+                    };
+                };
+            };
+        };
+    print_state: XmPushButton 
+        {
+        arguments
+            {
+            XmNfontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNlabelString = 
+            compound_string("LOG Connections");
+            };
+        callbacks
+            {
+            XmNactivateCallback = procedures
+                {
+                dns_control(0);
+                };
+            };
+        };
+    debug_on: XmPushButton 
+        {
+        arguments
+            {
+            XmNfontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNlabelString = 
+            compound_string("Set Debug On");
+            };
+        callbacks
+            {
+            XmNactivateCallback = procedures
+                {
+                dns_control(1);
+                };
+            };
+        };
+    debug_off: XmPushButton 
+        {
+        arguments
+            {
+            XmNfontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNlabelString = 
+            compound_string("Set Debug Off");
+            };
+        callbacks
+            {
+            XmNactivateCallback = procedures
+                {
+                dns_control(2);
+                };
+            };
+        };
+    kill_servers: XmPushButton 
+        {
+        arguments
+            {
+            XmNfontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNlabelString = 
+            compound_string("Kill DIM Servers");
+            };
+        callbacks
+            {
+            XmNactivateCallback = procedures
+                {
+                dns_control(3);
+                };
+            };
+        };
+    print_hash_table: XmPushButton 
+        {
+        arguments
+            {
+            XmNfontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNlabelString = 
+            compound_string("Print Hash Table");
+            };
+        callbacks
+            {
+            XmNactivateCallback = procedures
+                {
+                dns_control(4);
+                };
+            };
+        };
+    view_button: XmCascadeButton 
+        {
+        arguments
+            {
+            XmNfontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNlabelString = 
+            compound_string("View");
+            };
+        controls
+            {
+            XmPulldownMenu 
+                {
+                arguments
+                    {
+                    XmNborderWidth = 1;
+                    };
+                controls
+                    {
+                    XmPushButton all_servers;
+                    XmPushButton servers_by_node;
+                    XmPushButton servers_by_service;
+                    XmPushButton servers_in_error;
+                    };
+                };
+            };
+        };
+    servers_by_node: XmPushButton 
+        {
+        arguments
+            {
+            XmNfontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNlabelString = 
+            compound_string("Servers by Node");
+            };
+        callbacks
+            {
+            XmNactivateCallback = procedures
+                {
+                view_opts(0);
+                };
+            };
+        };
+    all_servers: XmPushButton 
+        {
+        arguments
+            {
+            XmNfontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNlabelString = 
+            compound_string("All Servers");
+            };
+        callbacks
+            {
+            XmNactivateCallback = procedures
+                {
+                view_opts(1);
+                };
+            };
+        };
+    servers_by_service: XmPushButton 
+        {
+        arguments
+            {
+            XmNfontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNlabelString = 
+            compound_string("Servers by Service");
+            };
+        callbacks
+            {
+            XmNactivateCallback = procedures
+                {
+                view_opts(2);
+                };
+            };
+        };
+    servers_in_error: XmPushButton 
+        {
+        arguments
+            {
+            XmNfontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNlabelString = 
+            compound_string("Servers in Error");
+            };
+        callbacks
+            {
+            XmNactivateCallback = procedures
+                {
+                view_opts(3);
+                };
+            };
+        };
+    help_button: XmCascadeButton 
+        {
+        arguments
+            {
+            XmNfontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNlabelString = 
+            compound_string("Help");
+            };
+        controls
+            {
+            XmPulldownMenu 
+                {
+                arguments
+                    {
+                    XmNborderWidth = 1;
+                    };
+                controls
+                    {
+                    };
+                };
+            };
+        };
+!    client_info: XmInformationDialog 
+!        {
+!        arguments
+!            {
+!            XmNlabelFontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+!            XmNbuttonFontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+!            XmNmessageString = 
+!            compound_string(" ");
+!            XmNmessageAlignment = XmALIGNMENT_CENTER;
+!            };
+!        };
+    client_info: XmSelectionDialog 
+        {
+        arguments
+            {
+            XmNlabelFontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNbuttonFontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNtextFontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNborderWidth = 1;
+			XmNlistItems = compound_string_table(
+				"Process xxxxxxxxxxxxxxxx on node xxxxxxxxxxxxxxxxxx"
+				);
+			XmNlistVisibleItemCount = 3;
+			XmNnoResize = true;
+			XmNresizePolicy = XmRESIZE_NONE;
+            };
+        };
+    server_info: XmSelectionDialog 
+        {
+        arguments
+            {
+            XmNlabelFontList = font_table(font('-*-TIMES-BOLD-R-*--*-120-*-*-*-*-ISO8859-1'));
+            XmNbuttonFontList = font_table(font('-*-TIMES-BOLD-R-*--*-120-*-*-*-*-ISO8859-1'));
+            XmNtextFontList = font_table(font('-*-TIMES-BOLD-R-*--*-120-*-*-*-*-ISO8859-1'));
+            XmNborderWidth = 1;
+            XmNapplyLabelString = 
+            compound_string("View Service");
+            XmNcancelLabelString = 
+            compound_string("Dismiss");
+            XmNhelpLabelString = 
+            compound_string("Save...");
+            XmNselectionLabelString = 
+            compound_string("View Service :");
+            };
+        callbacks
+            {
+            XmNapplyCallback = procedures
+                {
+                ok_pop_up(3);
+                };
+            XmNhelpCallback = procedures
+                {
+                ok_pop_up(4);
+                };
+            };
+        };
+	print: XmFileSelectionDialog
+        {
+        arguments
+            {
+            XmNlabelFontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNbuttonFontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNtextFontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNborderWidth = 1;
+            };
+        callbacks
+            {
+            XmNcancelCallback = procedures
+                {
+                cancel_pop_up(5);
+                };
+            XmNokCallback = procedures
+                {
+                ok_pop_up(5);
+                };
+           };
+        };
+		
+!    service_content: XmSelectionDialog 
+!        {
+!        arguments
+!            {
+!            XmNborderWidth = 1;
+!            };
+!        };
+	service_content_form: XmFormDialog
+        {
+        arguments
+            {
+            XmNborderWidth = 1;
+            };
+		controls
+			{
+            XmRowColumn service_content;
+			};
+        };
+    service_content: XmRowColumn 
+        {
+        arguments
+            {
+            XmNtopAttachment = XmATTACH_FORM;
+            XmNtopOffset = 0;
+            XmNleftAttachment = XmATTACH_FORM;
+            XmNleftOffset = 0;
+            XmNrightAttachment = XmATTACH_FORM;
+            XmNrightOffset = 0;
+            XmNbottomAttachment = XmATTACH_FORM;
+            XmNbottomOffset = 0;
+!            XmNentryAlignment = XmALIGNMENT_BEGINNING;
+            XmNentryAlignment = XmALIGNMENT_CENTER;
+            XmNborderWidth = 1;
+            };
+		controls
+			{
+            XmScrolledWindow service_window;
+ 			XmRowColumn service_buttons;
+!			XmPushButton dismiss;
+			};
+        };
+    service_window: XmScrolledWindow 
+        {
+        arguments
+            {
+			XmNwidth = 800;
+			XmNheight = 400;
+            XmNscrollBarDisplayPolicy = XmAS_NEEDED;
+            XmNscrollingPolicy = XmAUTOMATIC;
+            };
+        controls
+            {
+            XmLabel contents;
+            };
+        };
+    contents: XmLabel 
+        {
+        arguments
+            {
+            XmNalignment = XmALIGNMENT_BEGINNING;
+            XmNfontList = font_table(font('-*-COURIER-*-*-*--*-120-*-*-*-*-ISO8859-1'));
+            XmNlabelString = 
+            compound_string(" ");
+            };
+        callbacks
+            {
+            MrmNcreateCallback = procedures
+                {
+                create_label(1);
+                };
+            };
+        };
+    service_buttons: XmRowColumn 
+        {
+        arguments
+            {
+            XmNentryAlignment = XmALIGNMENT_CENTER;
+            XmNborderWidth = 0;
+            XmNorientation = XmVERTICAL;
+            XmNnumColumns = 4;
+            XmNpacking = XmPACK_COLUMN;
+            };
+		controls
+			{
+			XmPushButton standard;
+			XmPushButton float;
+			XmPushButton double;
+			XmPushButton dismiss;
+			};
+        };
+    standard: XmPushButton 
+        {
+        arguments
+            {
+            XmNfontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNalignment = XmALIGNMENT_CENTER;
+            XmNlabelString = 
+            compound_string("View Standard");
+            };
+        callbacks
+            {
+            XmNactivateCallback = procedures
+                {
+                cancel_pop_up(8);
+                };
+            };
+        };
+    float: XmPushButton 
+        {
+        arguments
+            {
+            XmNfontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNalignment = XmALIGNMENT_CENTER;
+            XmNlabelString = 
+            compound_string("View Float");
+            };
+        callbacks
+            {
+            XmNactivateCallback = procedures
+                {
+                cancel_pop_up(6);
+                };
+            };
+        };
+    double: XmPushButton 
+        {
+        arguments
+            {
+            XmNfontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNalignment = XmALIGNMENT_CENTER;
+            XmNlabelString = 
+            compound_string("View Double");
+            };
+        callbacks
+            {
+            XmNactivateCallback = procedures
+                {
+                cancel_pop_up(7);
+                };
+            };
+        };
+    dismiss: XmPushButton 
+        {
+        arguments
+            {
+            XmNfontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNalignment = XmALIGNMENT_CENTER;
+            XmNlabelString = 
+            compound_string("Dismiss");
+            };
+        callbacks
+            {
+            XmNactivateCallback = procedures
+                {
+                cancel_pop_up(4);
+                };
+            };
+        };
+    node_names: XmSelectionDialog 
+        {
+        arguments
+            {
+            XmNlabelFontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNbuttonFontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNtextFontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNborderWidth = 1;
+            XmNlistLabelString = 
+            compound_string("Nodes :");
+            XmNlistVisibleItemCount = 8;
+            XmNselectionLabelString = 
+            compound_string("Selected  node :");
+            };
+        callbacks
+            {
+            XmNcancelCallback = procedures
+                {
+                cancel_pop_up(0);
+                };
+            XmNokCallback = procedures
+                {
+                ok_pop_up(0);
+                };
+            };
+        };
+    service_names: XmPromptDialog 
+        {
+        arguments
+            {
+            XmNlabelFontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNbuttonFontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNborderWidth = 1;
+            XmNselectionLabelString = 
+            compound_string("Enter Service Name :");
+            };
+        callbacks
+            {
+            XmNcancelCallback = procedures
+                {
+                cancel_pop_up(1);
+                };
+            XmNokCallback = procedures
+                {
+                ok_pop_up(1);
+                };
+            };
+        };
+    confirmation_box: XmQuestionDialog 
+        {
+        arguments
+            {
+            XmNlabelFontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNbuttonFontList = font_table(font('-*-TIMES-MEDIUM-R-*--*-140-*-*-*-*-ISO8859-1'));
+            XmNborderWidth = 1;
+            XmNmessageString = 
+            compound_string("Do you really want to stop all DIM Servers ?");
+            };
+        callbacks
+            {
+            XmNcancelCallback = procedures
+                {
+                cancel_pop_up(2);
+                };
+            XmNokCallback = procedures
+                {
+                ok_pop_up(2);
+                };
+            };
+        };
+    row: XmForm 
+        {
+        arguments
+            {
+            XmNborderWidth = 1;
+!            XmNheight = 500;
+!            XmNwidth = 1180;
+            XmNwidth = 806;
+            XmNheight = 300;
+            };
+        controls
+            {
+            XmLabel display_type;
+            XmScrolledWindow view_window;
+            };
+        };
+
+value
+    did_default_font: exported font_table(font('-*-TIMES-BOLD-R-*--*-120-*-*-*-*-ISO8859-1'));
+
+procedure
+    did_exit();
+    create_main(integer);
+    create_label(integer);
+    create_matrix(integer);
+    view_opts(integer);
+    dns_control(integer);
+    ok_pop_up(integer);
+    cancel_pop_up(integer);
+
+end module;
+

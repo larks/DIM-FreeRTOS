@@ -1,0 +1,12 @@
+ld <util/swap.o
+ld <util/hash.o
+ld <util/sll.o
+ld <util/dll.o
+ld <util/conn_handler.o
+ld <unix/dtq.o
+ld <unix/tcpip.o
+ld <unix/utilities.o
+ld <dna.o
+ld <util/open_dns.o
+ld <dis.o
+ld <dic.o
