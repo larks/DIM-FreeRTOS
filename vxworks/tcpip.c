@@ -31,6 +31,9 @@
 #include <sockLib.h>
 #include <hostLib.h>
 #endif
+/* FreeRTOS/lwIP */
+#include "lwip/tcpip.h"
+#include "lwip/sockets.h"
 /*
 #include <stdarg.h>
 */
@@ -48,27 +51,31 @@ static int	queue_id;
 void (*FD_rout)();
 void *FD_par; 
 */
-
+/*
 #define VX_TASK_PRIO 150
 #define VX_TASK_SSIZE 20000
+*/
+#define FR_TASK_PRIO 150
+#define FR_TASK_STACKSIZE 20000
 
-int tcpip_init()
+xTaskHandle tcpip_init()
 {
-  int tid;
-  void io_handler_task();
-
-  if(tid = taskSpawn("DIM_IO_svr", VX_TASK_PRIO, 0, VX_TASK_SSIZE, 
-		     io_handler_task, 0) == ERROR)
-    {
-      perror("Task Spawn");
-    }
-   Tcpip_init_done = 1;
-
-  return(tid);
+	xTaskHandle CreatedTask;
+	int result;
+	void io_handler_task();
+	result = xTaskCreate(io_handler_task, ( signed portCHAR * ) "DIM_IO_svr", FR_TASK_STACKSIZE, NULL, FR_TASK_PRIO, &CreatedTask);
+	if(result == pdPASS){
+		Tcpip_init_done = 1;
+		return CreatedTask;
+	} else {
+		/*return NULL;*/
+		perror("Task Spawn");
+		return NULL;
+	}
 }
 
-static int enable_sig(conn_id)
-int conn_id;
+/* TODO: modify */
+static int enable_sig(int conn_id)
 {
   static int pfd = 0,ret;
 
@@ -109,9 +116,7 @@ fd_set *fds;
 }
 
 
-static int fds_get_entry( fds, conn_id ) 
-fd_set *fds;
-int *conn_id;
+static int fds_get_entry( fd_set * fds, int * conn_id )
 {
 	int	i;
 
@@ -151,8 +156,7 @@ int tag;
 }
 */
 
-static void tcpip_test_write( conn_id )
-int conn_id;
+static void tcpip_test_write( int conn_id )
 {
 	/* Write to every socket we use, which uses the TCPIP protocol,
 	 * which has an established connection (reading), which is currently
@@ -171,8 +175,7 @@ int conn_id;
 	}
 }
 
-tcpip_set_test_write(conn_id, timeout)
-int conn_id, timeout;
+tcpip_set_test_write(int conn_id, int timeout)
 {
 	Net_conns[conn_id].timr_ent = dtq_add_entry( queue_id, timeout, 
 		tcpip_test_write, conn_id );
@@ -180,8 +183,7 @@ int conn_id, timeout;
 	Net_conns[conn_id].last_used = time(NULL);
 }
 
-static void pipe_sig_handler( num )
-int num;
+static void pipe_sig_handler( int num )
 {
 /*
 	printf( "*** pipe_sig_handler called ***\n" );
@@ -189,15 +191,15 @@ int num;
 }
 
 
-static void do_read( conn_id )
-int conn_id;
+static void do_read( int conn_id )
 {
 	/* There is 'data' pending, read it.
 	 */
 	int	len, ret, totlen, size, count;
 	char	*p;
 
-	if( ioctl( Net_conns[conn_id].channel, FIONREAD, (int)&count ) == 0 &&
+	/*if( ioctl( Net_conns[conn_id].channel, FIONREAD, (int)&count ) == 0 &&*/
+	if( ioctlsocket( Net_conns[conn_id].channel, FIONREAD, (int)&count ) == 0 &&
 	    count == 0 )
 	{	/* Connection closed by other side. */
 		Net_conns[conn_id].read_rout( conn_id, -1, 0 );
@@ -208,7 +210,7 @@ int conn_id;
 	p = Net_conns[conn_id].buffer;
 	totlen = 0;
 	while( size > 0 &&
-	       (ret = ioctl( Net_conns[conn_id].channel, FIONREAD,
+	       (ret = ioctlsocket( Net_conns[conn_id].channel, FIONREAD,
 			     (int)&count ) == 0) &&
 	       count > 0 )
 	{
@@ -242,8 +244,7 @@ int conn_id;
 }
 
 
-do_accept( conn_id )
-int conn_id;
+do_accept( int conn_id )
 {
 	/* There is a 'connect' pending, serve it.
 	 */
@@ -264,20 +265,23 @@ int conn_id;
 				      conn_id, TCPIP );
 }
 
-void io_handler_task( main_conn_id )
-int main_conn_id;
+/*TODO: learn pipes plz*/
+void io_handler_task( int main_conn_id )
 {
 	/* wait for an IO signal, find out what is happening and
 	 * call the right routine to handle the situation.
 	 */
 	fd_set	rfds;
 	int	conn_id, ret, rcount, count;
-	int pfd;
+	/*int pfd;*/
+	xQueueHandle pfd; /* Pipe file descriptor */
 	char pipe_buf[10];
-
+/*
 	pfd = pipeDevCreate("/pipe/DIM_IO_pp", 1000, 5);
 	pfd = open("/pipe/DIM_IO_pp",O_RDONLY,0);
-
+*/
+	pfd = xQueueCreate(1000, 5);
+	
 	while(1)
 	{
 	    list_to_fds( &rfds );
@@ -292,7 +296,8 @@ int main_conn_id;
 	    }
 	    if(FD_ISSET(pfd, &rfds) )
 	    {
-	      read(pfd, pipe_buf, 10);
+	      /*read(pfd, pipe_buf, 10);*/
+		  xQueueReceive(pfd, pipe_buf, ( TickType_t ) 10 ));
 	      FD_CLR( pfd, &rfds );
 	    }
 	    while( ret = fds_get_entry( &rfds, &conn_id ) > 0 ) {
@@ -307,7 +312,7 @@ int main_conn_id;
 			do
 			{
 				do_read( conn_id );
-				ioctl( Net_conns[conn_id].channel, FIONREAD, 
+				ioctlsocket( Net_conns[conn_id].channel, FIONREAD, 
 				       (int)&count );
 /*
 				printf("Read %d, But there was still %d more to read...\n",
@@ -324,8 +329,7 @@ int main_conn_id;
          }
 }
 
-void dim_io(fd)
-int fd;
+void dim_io(int fd)
 {
 	/* We got an IO signal, lets find out what is happening and
 	 * call the right routine to handle the situation.
@@ -348,7 +352,7 @@ int fd;
 			do
 			{
 				do_read( conn_id );
-				ioctl( Net_conns[conn_id].channel, FIONREAD, (int)&count );
+				ioctlsocket( Net_conns[conn_id].channel, FIONREAD, (int)&count );
 /*
 				printf("Read %d, But there was still %d more to read...\n",
 					totlen,count);
@@ -368,10 +372,7 @@ int fd;
 	 * interrupt.
 	 */
 
-int tcpip_start_read( conn_id, buffer, size, ast_routine )
-int size, conn_id;
-char *buffer;
-void (*ast_routine)();
+int tcpip_start_read( int conn_id, char * buffer, int size, void (* ast_routine)() )
 {
 	int pid, ret = 1, flags = 1;
 	/* Install signal handler stuff on the socket, and record
@@ -392,21 +393,14 @@ void (*ast_routine)();
 }
 
 
-int tcpip_open_client( conn_id, node, task, port )
-int conn_id;
-char *node, *task;
-int port;
+int tcpip_open_client( int conn_id, char * node, char * task, int port )
 {
 	/* Create connection: create and initialize socket stuff. Try
 	 * and make a connection with the server.
 	 */
 	struct sockaddr_in sockname;
-#ifndef VxWorks
-	struct hostent *host;
-#else
 	int host_addr;
 	char tmp_node[MAX_NAME];
-#endif
 	int path, par, val, ret_code;
 
 	/*
@@ -417,7 +411,7 @@ int port;
 	  tcpip_init();
 	strcpy(tmp_node,node);
 	*(strchr(tmp_node,'.')) = '\0';
-       	host_addr = hostGetByName(tmp_node);
+       	host_addr = hostGetByName(tmp_node); /*TODO: check if this makes sense -- I am not sure.*/
 
 	if( (path = socket(AF_INET, SOCK_STREAM, 0)) == -1 ) 
 	{
@@ -436,11 +430,7 @@ int port;
 	}
 
 	sockname.sin_family = PF_INET;
-#ifndef VxWorks /* XXX: Not sure... */
-	sockname.sin_addr = *((struct in_addr *) host->h_addr);
-#else
 	sockname.sin_addr = *((struct in_addr *) &host_addr);
-#endif
 	sockname.sin_port = htons((ushort) port); /* port number to send to */
 	while(connect(path, (struct sockaddr*)&sockname, sizeof(sockname)) == -1 )
 	{
@@ -466,9 +456,7 @@ int port;
 }
 
 
-int tcpip_open_server( conn_id, task, port )
-int conn_id, *port;
-char *task;
+int tcpip_open_server( int conn_id, char * task, int * port )
 {
 	/* Create connection: create and initialize socket stuff,
 	 * find a free port on this node.
@@ -547,11 +535,9 @@ char *task;
 }
 
 
-int tcpip_start_listen( conn_id, ast_routine )
-int conn_id;
-void (*ast_routine)();
+int tcpip_start_listen( int conn_id, void ( * ast_routine)() )
 {
-	int pid, ret=1, flags = 1;
+	int pid, ret=1, flags = 1; /*XXX: Where is actually pid used here?*/
 	/* Install signal handler stuff on the socket, and record
 	 * some necessary information: we are NOT reading, thus
 	 * no size.
@@ -573,8 +559,7 @@ void (*ast_routine)();
 }
 
 
-int tcpip_open_connection( conn_id, path )
-int conn_id, path;
+int tcpip_open_connection( int conn_id, int path )
 {
 	/* Fill in/clear some fields, the node and task field
 	 * get filled in later by a special packet.
@@ -608,18 +593,14 @@ int conn_id, path;
 }
 
 
-void tcpip_get_node_task( conn_id, node, task )
-int conn_id;
-char *node, *task;
+void tcpip_get_node_task( int conn_id, char * node, char * task )
 {
 	strcpy( node, Net_conns[conn_id].node );
 	strcpy( task, Net_conns[conn_id].task );
 }
 
 
-int tcpip_write( conn_id, buffer, size )
-int conn_id, size;
-char *buffer;
+int tcpip_write( int conn_id, char * buffer, int size )
 {
 	/* Do a (synchronous) write to conn_id.
 	 */
@@ -635,9 +616,7 @@ char *buffer;
 	return(wrote);
 }
 
-int tcpip_write_nowait( conn_id, buffer, size )
-int conn_id, size;
-char *buffer;
+int tcpip_write_nowait( int conn_id, char * buffer, int size )
 {
 	/* Do a (synchronous) write to conn_id.
 	 */
@@ -654,8 +633,7 @@ char *buffer;
 }
 
 
-int tcpip_close( conn_id )
-int conn_id;
+int tcpip_close( int conn_id )
 {
 	/* Clear all traces of the connection conn_id.
 	 */
@@ -679,15 +657,13 @@ int conn_id;
 }
 
 
-int tcpip_failure( code )
-int code;
+int tcpip_failure( int code )
 {
 	return(!code);
 }
 
 
-void tcpip_report_error( code )
-int code;
+void tcpip_report_error(int code )
 {
 	perror( "tcpip" );
 }

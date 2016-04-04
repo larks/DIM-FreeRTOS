@@ -179,13 +179,7 @@ int n_left = 0;
 
 #endif
 
-unsigned dis_add_service( name, type, address, size, user_routine, tag)
-register char *name;
-register char *type;
-void *address;
-int size;
-void (*user_routine)();
-int tag;
+unsigned dis_add_service( char * name, char * type, void * address, int size, void (*user_routine)(), int tag)
 {
 	unsigned ret;
 #ifdef VxWorks
@@ -197,18 +191,18 @@ int tag;
        	ret = do_dis_add_service( name, type, address, size,user_routine,tag);
 #ifdef VxWorks
 	servp = (SERVICE *)id_get_ptr(ret);
-	servp->tid = taskIdSelf();
+	servp->tid = taskIdSelf(); /* XXX: This kind of thing requires traceability, not something I want to enable 
+	                                    also -- it is not reallyused other places than here and in a utilities function*/
 #endif
+#ifdef FreeRTOS
+	
+#endif /* TODO: remove ifs */
 	DIM_UNLOCK
 	ENABLE_AST
 	return(ret);
 }
 
-void dis_add_cmnd( name, type, user_routine, tag )
-register char *name;
-register char *type;
-void (*user_routine)();
-int tag;
+void dis_add_cmnd(char * name, char * type, void (*user_routine)(), int tag )
 {
 	register SERVICE *new_serv;
 	register int service_id;
