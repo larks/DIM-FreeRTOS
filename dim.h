@@ -16,7 +16,7 @@
 #define DIM_VERSION_NUMBER 2007F
 
 
-#define MY_LITTLE_ENDIAN	0x1
+#define MY_LITTLE_ENDIAN	 0x1
 #define MY_BIG_ENDIAN 		0x2
 
 #define VAX_FLOAT		0x10

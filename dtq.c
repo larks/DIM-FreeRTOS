@@ -25,7 +25,7 @@
 #include <sys/timeb.h> /*struct timeb{time_t, millitm, timezone, dstflag} ftime(struct timeb *)*/
 
 /* global definitions */
-#define MAX_TIMER_QUEUES	16	/* Number of normal queue's     */
+#define MAX_TIMER_QUEUES 	16	/* Number of normal queue's     */
 #define SPECIAL_QUEUE		16	/* The queue for the queue-less */
 #define WRITE_QUEUE			17 
 

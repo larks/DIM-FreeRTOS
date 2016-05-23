@@ -133,7 +133,7 @@ printf("passing up %d bytes, conn_id %d\n",dna_connp->full_size, conn_id);
 
 static void ast_read_h( int conn_id, int status, int size )
 {
-	register DNA_CONNECTION *dna_connp = &Dna_conns[conn_id];
+	register DNA_CONNECTION *dna_connp = &Dnadconns[conn_id];
 	int tcpip_code;
 	register int read_size, next_size;
 	register char *buff;
