@@ -24,13 +24,13 @@
 #include <signal.h>
 #include <sys/ioctl.h>
 #include <errno.h>
-#ifndef VxWorks
+/*#ifndef VxWorks
 #include <netdb.h>
-#else /* VxWorks */
+#else
 #include <ioLib.h>
 #include <sockLib.h>
 #include <hostLib.h>
-#endif
+#endif*/
 /* FreeRTOS/lwIP */
 #include "lwip/tcpip.h"
 #include "lwip/sockets.h"
@@ -82,10 +82,11 @@ static int enable_sig(int conn_id)
       if(pfd <= 0)
 	{
 	  taskDelay(50);
-	  pfd = open("/pipe/DIM_IO_pp",O_WRONLY,0);
+	  //XXX: pfd = open("/pipe/DIM_IO_pp",O_WRONLY,0);
+	  
 	}
       if(pfd > 0)
-	ret = write(pfd, "QUIT", 5);
+	//XXX: ret = write(pfd, "QUIT", 5);
       return(1);
 }
 
@@ -274,18 +275,18 @@ void io_handler_task( int main_conn_id )
 	fd_set	rfds;
 	int	conn_id, ret, rcount, count;
 	/*int pfd;*/
-	xQueueHandle pfd; /* Pipe file descriptor */
+	xQueueHandle DIM_IO_pp; /* Pipe file descriptor */
 	char pipe_buf[10];
 /*
 	pfd = pipeDevCreate("/pipe/DIM_IO_pp", 1000, 5);
 	pfd = open("/pipe/DIM_IO_pp",O_RDONLY,0);
 */
-	pfd = xQueueCreate(1000, 5);
+	DIM_IO_pp = xQueueCreate(1000, 5);
 	
 	while(1)
 	{
-	    list_to_fds( &rfds );
-	    FD_SET( pfd, &rfds );
+	    /*list_to_fds( &rfds );*/
+	    /*FD_SET( pfd, &rfds );*/
 	    ret = select(FD_SETSIZE, &rfds, NULL, NULL, NULL);
 	    if(ret < 1) {
 	      /*
@@ -297,8 +298,9 @@ void io_handler_task( int main_conn_id )
 	    if(FD_ISSET(pfd, &rfds) )
 	    {
 	      /*read(pfd, pipe_buf, 10);*/
-		  xQueueReceive(pfd, pipe_buf, ( TickType_t ) 10 ));
-	      FD_CLR( pfd, &rfds );
+		  xQueueReceive(DIM_IO_pp, pipe_buf, ( TickType_t ) 10 ));
+	      /*FD_CLR( pfd, &rfds );*/
+		  xQueueReset(DIM_IO_pp);
 	    }
 	    while( ret = fds_get_entry( &rfds, &conn_id ) > 0 ) {
 		  /*
@@ -348,7 +350,7 @@ void dim_io(int fd)
 	if(conn_id)
 	{
 		if( Net_conns[conn_id].reading )
-		{
+		{	195
 			do
 			{
 				do_read( conn_id );

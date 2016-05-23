@@ -15,6 +15,9 @@
 #ifdef VxWorks
 #include <time.h>
 #endif
+#ifdef FreeRTOS
+#include <time.h>
+#endif
 
 /* global definitions */
 #define MAX_TIMER_QUEUES	16	/* Number of normal queue's     */
@@ -47,29 +50,45 @@ static int count = 1;
 #ifdef VxWorks
 static timer_t Timer_id;
 #endif
+#ifdef FreeRTOS
+static TimerHandle_t Timer_id;
+#endif
 
 /*
  * DTQ routines
  */
 
+/*
 #define VX_TASK_PRIO 150
 #define VX_TASK_SSIZE 20000
-
-int dtq_init()
+*/
+#define FR_TASK_PRIO 150
+#define FR_TASK_SSIZE 20000
+/*int dtq_init()*/
+xTaskHandle dtq_init()
 {
-  int tid;
+  /*int tid;*/
+  xTaskHandle tid;
+  int result;
   void timr_handler_task();
 
-  if(!DTQ_Initialized)
-    {
+	if(!DTQ_Initialized){
+		result = xTaskCreate(timr_handler_task, ( signed portCHAR * ) "DIM_TIMR_svr", FR_TASK_SSIZE, NULL, FR_TASK_PRIO, &tid);
+	/*
       if(tid = taskSpawn("DIM_TIMR_svr", VX_TASK_PRIO, 0, VX_TASK_SSIZE, 
 		     timr_handler_task, 0) == ERROR)
       {
          perror("Task Spawn");
       }
-      DTQ_Initialized = TRUE;
+	 */
+		if(result == pdPASS){
+			DTQ_Initialized = TRUE;
+			return pid;
+		} else {
+			return NULL;
+		}
     }
-  return(tid);
+  /*return(tid);*/
 }
 
 void timr_handler_task()
@@ -89,15 +108,22 @@ void timr_handler_task()
 		perror( "sigaction(SIGALRM)" );
 		exit(0);
     }
-    timer_create(CLOCK_REALTIME, 0, &Timer_id);
+	/* For VxWorks: If evp is NULL, a default signal (SIGALRM) is queued to the task, 
+	                and the signal data is set to the timer ID. Initially, the timer is disarmed.*/
+    /*timer_create(CLOCK_REALTIME, 0, &Timer_id);*/
+	Timer_id = xTimerCreate((const char *)"Timer", /* Timer name */
+	                        (TickType_t) 0, /*non-blocking? TickType_t xTimerPeriod*/
+							pdTRUE, /*auto-reload timer, pdFALSE for one-shot*/
+							(void *) NULL, /* Timer ID */
+							(void *) NULL /* Timer callback function */
+							); 
     while(1)
     {
       pause();
     }
 }
 
-int alarm(secs)
-int secs;
+int alarm(int secs)
 {
 	struct itimerspec val, oval;
 
@@ -128,8 +154,7 @@ int dtq_create()
 }
 
 
-int dtq_delete(queue_id)
-int queue_id;
+int dtq_delete(int queue_id)
 {
 	TIMR_ENT *queue_head;
 
@@ -142,9 +167,7 @@ int queue_id;
 	return(1);			
 }
 	
-TIMR_ENT *dtq_add_entry(queue_id, time, user_routine, tag)
-int queue_id, time, tag;
-void (*user_routine)();
+TIMR_ENT *dtq_add_entry(int queue_id, int time, (void *)(user_routine)(), int tag)
 {
 	TIMR_ENT *new_entry;
 	int old_time, new_time;
@@ -180,8 +203,7 @@ void (*user_routine)();
 }
 
 
-int dtq_clear_entry(entry)
-TIMR_ENT *entry;
+int dtq_clear_entry(TIMR_ENT * entry)
 {
 	DISABLE_AST
 	  /*
@@ -203,9 +225,7 @@ TIMR_ENT *entry;
 }
 
 
-int dtq_rem_entry(queue_id, entry)
-int queue_id;
-TIMR_ENT *entry;
+int dtq_rem_entry(int queue_id, TIMR_ENT * entry)
 {
 	int ret;
 	DISABLE_AST
@@ -219,9 +239,7 @@ TIMR_ENT *entry;
 }
 
 
-static int ins_entry(queue_id, entry)
-int queue_id;
-TIMR_ENT *entry;
+static int ins_entry(int queue_id, TIMR_ENT * entry)
 {
 	TIMR_ENT *auxp, *prevp, *queue_head;
 	int entry_time;
@@ -251,9 +269,7 @@ TIMR_ENT *entry;
 }
 
 
-static int rem_entry(queue_id, entry)
-int queue_id;
-TIMR_ENT *entry;
+static int rem_entry(int queue_id, TIMR_ENT * entry)
 {
 	TIMR_ENT *auxp, *prevp, *queue_head;
 	int found = 0;
@@ -285,8 +301,7 @@ TIMR_ENT *entry;
 }
 
 
-static int rem_all_entries(queue_id)
-int queue_id;
+static int rem_all_entries(int queue_id)
 {
 	TIMR_ENT *auxp, *queue_head;
 
@@ -301,8 +316,7 @@ int queue_id;
 }
 
 
-static int rem_deleted_entries(queue_id)
-int queue_id;
+static int rem_deleted_entries(int queue_id)
 {
 	TIMR_ENT *auxp, *prevp, *queue_head;
 
@@ -325,9 +339,7 @@ int queue_id;
 }
 
 
-static int scan_all_timer_lists(done_entries, min_time)
-TIMR_ENT *done_entries;
-int *min_time;
+static int scan_all_timer_lists(TIMR_ENT * done_entries, int * min_time)
 {
 	TIMR_ENT *auxp, *aux_donep, *queue_head;
 	int queue_id, entries = FALSE;
@@ -373,8 +385,7 @@ int *min_time;
 }
 
 
-static void ast_rout( num )
-int num;
+static void ast_rout( int num )
 {
 	TIMR_ENT tmout_entries, *aux_donep;
 	int queue_id, new_time;
@@ -431,10 +442,7 @@ static void Std_timer_handler()
 {
 }
 
-
-void dtq_start_timer(time, user_routine, tag)
-int time, tag;
-void (*user_routine)();
+void dtq_start_timer(int time, (void *)(user_routine)(), int tag)
 {
 	dtq_init();
 	if( timer_queues[SPECIAL_QUEUE].queue_head == NULL ) {
@@ -445,8 +453,7 @@ void (*user_routine)();
 }
 
 
-void dtq_stop_timer(tag)
-int tag;
+void dtq_stop_timer(int tag)
 {
 	TIMR_ENT *entry;
 

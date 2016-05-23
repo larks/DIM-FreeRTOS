@@ -7,7 +7,7 @@
 #endif
 
 /* CFORTRAN interface */
-
+/*
 #define dis_start_serving dis_start_serving_
 #define dis_get_next_cmnd dis_get_next_cmnd_
 #define dis_add_service dis_add_service_
@@ -17,7 +17,7 @@
 #define dis_remove_service dis_remove_service_
 #define dis_send_service dis_send_service_
 #define dis_convert_str dis_convert_str_
-
+*/
 /* Service type definition */
 
 #ifndef ONCE_ONLY
@@ -33,7 +33,7 @@
 #endif
 
 /* Routine definition */
-
+#if 0 /* Comment out this proto hack */
 #ifndef _PROTO
 #ifndef OSK		/* Temorary hack */
 #	if (__STDC__ == 1) || defined(ultrix) 
@@ -45,18 +45,18 @@
 #	define _PROTO(func,param)	func ()
 #endif
 #endif
-
-_PROTO( int dis_start_serving,    (char *task_name) );
-_PROTO( int dis_get_next_cmnd,    (int *tag, int *buffer, int *size ) );
-_PROTO( unsigned dis_add_service, (char *service_name, char *service_type,
+#endif /* End of comment */
+int dis_start_serving(char *task_name);
+int dis_get_next_cmnd(int *tag, int *buffer, int *size );
+unsigned dis_add_service(char *service_name, char *service_type,
 				   void *service_address, int service_size,
-				   void (*usr_routine)(), int tag) );
-_PROTO( void dis_add_cmnd,        (char *service_name, char *service_type,
-			           void (*usr_routine)(), int tag) );
-_PROTO( void dis_report_service,  (char *service_name) );
-_PROTO( int dis_update_service,   (unsigned service_id) );
-_PROTO( int dis_remove_service,   (unsigned service_id) );
-_PROTO( void dis_send_service,    (unsigned service_id, int *buffer,
-				   int size) );
+				   void (*usr_routine)(), int tag);
+void dis_add_cmnd(char *service_name, char *service_type,
+			           void (*usr_routine)(), int tag);
+void dis_report_service(char *service_name);
+int dis_update_service(unsigned service_id);
+int dis_remove_service(unsigned service_id);
+void dis_send_service(unsigned service_id, int *buffer,
+				   int size);
 
 #endif

@@ -74,18 +74,18 @@ static int Version_number = 3;
 static int Dis_timer_q = 0;
 
 
-_PROTO( static void dis_insert_request, (int conn_id, DIC_PACKET *dic_packet,
-				  int size, int status ) );
-_PROTO( void execute_service,    (int req_id) );
-_PROTO( void execute_command,    (SERVICE *servp, DIC_PACKET *packet) );
-_PROTO( void register_services,  (int flag) );
-_PROTO( void std_cmnd_handler,   (int *tag, int *cmnd_buff, int *size) );
-_PROTO( void client_info,        (int *tag, int **bufp, int *size) );
-_PROTO( void service_info,       (int *tag, int **bufp, int *size) );
-_PROTO( SERVICE *find_service,   (char *name) );
-_PROTO( static void copy_swap_buffer, (int format, FORMAT_STR *format_data, 
-					void *buff_out, void *buff_in, int size) );
-_PROTO( static void get_format_data, (FORMAT_STR *format_data, char *def) );
+static void dis_insert_request(int conn_id, DIC_PACKET *dic_packet,
+				  int size, int status );
+void execute_service(int req_id);
+void execute_command(SERVICE *servp, DIC_PACKET *packet);
+void register_services(int flag);
+void std_cmnd_handler(int *tag, int *cmnd_buff, int *size);
+void client_info(int *tag, int **bufp, int *size);
+void service_info(int *tag, int **bufp, int *size);
+SERVICE *find_service(char *name);
+static void copy_swap_buffer(int format, FORMAT_STR *format_data, 
+					void *buff_out, void *buff_in, int size);
+static void get_format_data(FORMAT_STR *format_data, char *def);
 
 
 /* Add a service to the list of known services
@@ -94,13 +94,8 @@ _PROTO( static void get_format_data, (FORMAT_STR *format_data, char *def) );
  * or a service can be provided by a user routine - user_routine.
  */
 
-static unsigned do_dis_add_service( name, type, address, size, user_routine, tag )
-register char *name;
-register char *type;
-void *address;
-int size;
-void (*user_routine)();
-int tag;
+static unsigned do_dis_add_service( register char * name, register char * type,
+void * address, int size, void *(user_routine)(), int tag )
 {
 	register SERVICE *new_serv;
 	register int service_id;
@@ -175,14 +170,15 @@ int n_left = 0;
 	    Dns_timr_ent = NULL;
 	  }
 }
-
-
 #endif
 
 unsigned dis_add_service( char * name, char * type, void * address, int size, void (*user_routine)(), int tag)
 {
 	unsigned ret;
 #ifdef VxWorks
+	register SERVICE *servp;
+#endif
+#ifdef FreeRTOS
 	register SERVICE *servp;
 #endif
 
@@ -195,7 +191,8 @@ unsigned dis_add_service( char * name, char * type, void * address, int size, vo
 	                                    also -- it is not reallyused other places than here and in a utilities function*/
 #endif
 #ifdef FreeRTOS
-	
+	servp = (SERVICE *)id_get_ptr(ret);
+	servp->tid = xTaskGetCurrentTaskHandle();
 #endif /* TODO: remove ifs */
 	DIM_UNLOCK
 	ENABLE_AST
@@ -325,9 +322,7 @@ register char *def;
 	format_data->par_bytes = 0;
 }
 
-void recv_dns_dis_rout( conn_id, packet, size, status )
-int conn_id, size, status;
-DNS_DIS_PACKET *packet;
+void recv_dns_dis_rout( int conn_id, DNS_DIS_PACKET * packet, int size, int status )
 {
 	switch(status)
 	{
@@ -372,8 +367,7 @@ printf(" Some Services already known to NAME SERVER, commiting suicide\n");
  * Send services uses the DNA package. services is a linked list of services
  * stored by add_service.
  */
-void register_services(flag)
-register int flag;
+void register_services(register int flag)
 {
 	register DIS_DNS_PACKET *dis_dns_p = &Dis_dns_packet;
 	register int n_services;
@@ -461,8 +455,7 @@ register int flag;
 	}
 }
 
-void unregister_service(servp)
-register SERVICE *servp;
+void unregister_service(register SERVICE * servp)
 {
 	register DIS_DNS_PACKET *dis_dns_p = &Dis_dns_packet;
 	register int n_services;
@@ -503,8 +496,7 @@ register SERVICE *servp;
  * Using the DNA package start accepting requests from clients.
  * When a request arrives the routine "dis_insert_request" will be executed.
  */
-int dis_start_serving(task)
-char *task;
+int dis_start_serving(char * task)
 {
 	static int server_open = 0;
 	char str0[MAX_NAME], str1[MAX_NAME],str2[MAX_NAME];
@@ -591,7 +583,7 @@ int size;
 	Called by DNA package.
 	A request has arrived, queue it to process later - dis_ins_request
 */
-static void dis_insert_request(conn_id, dic_packet, size, status)
+static void dis_insert_request(int conn_id, DIC_PACKET *dic_packet, int size, int status)
 register int conn_id;
 register DIC_PACKET *dic_packet;
 register int size, status;

@@ -11,13 +11,16 @@
  *
  * $Id: dim.h,v 1.1 1994/07/03 15:20:47 gerco Exp gerco $
  */
-
+/*
 #ifndef OSK
 #	define register
 #	ifdef _OSK
 #		define OSK
 #	endif
 #endif
+*/
+
+#if 0 /*comment out this crap*/
 
 #ifndef _PROTO
 #ifndef OSK		/* Temorary hack */
@@ -31,6 +34,8 @@
 #endif
 #endif
 
+#endif /* end of comment */
+
 #define MY_LITTLE_ENDIAN	0x1
 #define MY_BIG_ENDIAN 		0x2
 
@@ -40,6 +45,7 @@
 
 #define MY_OS9			0x100
 
+/**
 #ifdef VMS
 #include <ssdef.h>
 #include <stdio.h>
@@ -58,6 +64,7 @@
 #define MY_FORMAT MY_LITTLE_ENDIAN+VAX_FLOAT
 #endif
 #endif
+**/
 
 #ifdef unix
 #include <sys/types.h>
@@ -68,6 +75,9 @@
 #include <signal.h>
 #ifdef VxWorks
 #include <sigLib.h>
+#endif
+#ifdef FreeRTOS
+/*#include <sys/signal.h>????*/
 #endif
 #define NOSHARE 
 #define DISABLE_AST     sigset_t set, oset;sigemptyset(&set);sigaddset(&set,SIGIO);sigaddset(&set,SIGALRM);sigprocmask(SIG_BLOCK,&set,&oset);
@@ -92,14 +102,19 @@
 #endif
 */
 #endif
-_PROTO( int _swapl,  (int l) );
-_PROTO( short _swaps,   (short s) );
+int _swapl(int l);
+short _swaps(short s);
+/*
 #ifdef solaris
 #include <thread.h>
 mutex_t Global_DIM_mutex;
 #define DIM_LOCK mutex_lock(&Global_DIM_mutex);
 #define DIM_UNLOCK mutex_unlock(&Global_DIM_mutex);
 #else
+#ifdef FreeRTOS
+#define DIM_LOCK taskENTER_CRITICAL();
+#define DIM_UNLOCK taskEXIT_CRITICAL()
+#endif
 #ifdef VxWorks
 #define DIM_LOCK taskLock();
 #define DIM_UNLOCK taskUnlock();
@@ -109,7 +124,8 @@ mutex_t Global_DIM_mutex;
 #endif
 #endif
 #endif
-
+*/
+/*
 #ifdef OSK
 #include <types.h>
 #ifndef _UCC
@@ -138,7 +154,7 @@ _PROTO( void *realloc, (void *ptr, unsigned size) );
 _PROTO( int _swapl,   (int l) );
 _PROTO( short _swaps,   (short s) );
 #endif
-
+*/
 
 #define	TRUE	1
 #define	FALSE	0
@@ -149,6 +165,7 @@ _PROTO( short _swaps,   (short s) );
 #define SEEK_PORT	0			/* server should seek a port */
 
 #define MIN_BIOCNT	 	50
+/*
 #ifdef OSK
 #define DIS_DNS_TMOUT_MIN	5
 #define DIS_DNS_TMOUT_MAX	10
@@ -161,6 +178,7 @@ _PROTO( short _swaps,   (short s) );
 #define TCP_RCV_BUF_SIZE	4096
 #define TCP_SND_BUF_SIZE	4096
 #else
+*/
 #define DIS_DNS_TMOUT_MIN	30
 #define DIS_DNS_TMOUT_MAX	60
 #define DIC_DNS_TMOUT_MIN	60
@@ -171,7 +189,7 @@ _PROTO( short _swaps,   (short s) );
 #define ID_BLOCK		512
 #define TCP_RCV_BUF_SIZE	16384
 #define TCP_SND_BUF_SIZE	16384
-#endif
+/*#endif*/
 #define DID_DNS_TMOUT_MIN	5
 #define DID_DNS_TMOUT_MAX	10
 /*
@@ -425,44 +443,40 @@ extern NOSHARE int Curr_N_Conns;
 
 
 /* DNA */
-_PROTO( int dna_start_read,    (int conn_id, int size) );
-_PROTO( void dna_test_write,   (int conn_id) );
-_PROTO( int dna_write,         (int conn_id, void *buffer, int size) );
-_PROTO( int dna_write_nowait,  (int conn_id, void *buffer, int size) );
-_PROTO( int dna_open_server,   (char *task, void (*read_ast)(), int *protocol,
-				int *port) );
-_PROTO( int dna_get_node_task, (int conn_id, char *node, char *task) );
-_PROTO( int dna_open_client,   (char *server_node, char *server_task, int port,
-                                int server_protocol, void (*read_ast)()) );
-_PROTO( int dna_close,         (int conn_id) );
-_PROTO( void dna_report_error, (int conn_id, int code, char *routine_name) );
+int dna_start_read(int conn_id, int size);
+void dna_test_write(int conn_id);
+int dna_write(int conn_id, void *buffer, int size);
+int dna_write_nowait(int conn_id, void *buffer, int size);
+int dna_open_server(char *task, void (*read_ast)(), int *protocol, int *port);
+int dna_get_node_task, (int conn_id, char *node, char *task);
+int dna_open_client(char *server_node, char *server_task, 
+                    int port, int server_protocol, void (*read_ast)());
+int dna_close(int conn_id);
+void dna_report_error(int conn_id, int code, char *routine_name);
 
 
 /* TCPIP */
-_PROTO( int tcpip_open_client,     (int conn_id, char *node, char *task,
-                                    int port) );
-_PROTO( int tcpip_open_server,     (int conn_id, char *task, int *port) );
-_PROTO( int tcpip_open_connection, (int conn_id, int channel) );
-_PROTO( int tcpip_start_read,      (int conn_id, char *buffer, int size,
-                                    void (*ast_routine)()) );
-_PROTO( int tcpip_start_listen,    (int conn_id, void (*ast_routine)()) );
-_PROTO( int tcpip_write,           (int conn_id, char *buffer, int size) );
-_PROTO( void tcpip_get_node_task,  (int conn_id, char *node, char *task) );
-_PROTO( int tcpip_close,           (int conn_id) );
-_PROTO( int tcpip_failure,         (int code) );
-_PROTO( void tcpip_report_error,   (int code) );
+int tcpip_open_client(int conn_id, char *node, char *task, int port);
+int tcpip_open_server(int conn_id, char *task, int *port);
+int tcpip_open_connection(int conn_id, int channel);
+int tcpip_start_read(int conn_id, char *buffer, int size, void (*ast_routine)());
+int tcpip_start_listen(int conn_id, void (*ast_routine)());
+int tcpip_write(int conn_id, char *buffer, int size);
+void tcpip_get_node_task(int conn_id, char *node, char *task);
+int tcpip_close(int conn_id);
+int tcpip_failure(int code);
+void tcpip_report_error(int code);
 
 
 /* DTQ */
-_PROTO( void print_date_time,    (void) );
-_PROTO( int dtq_create,          (void) );
-_PROTO( int dtq_delete,          (int queue_id) );
-_PROTO( TIMR_ENT *dtq_add_entry, (int queue_id, int time,
-                                  void (*user_routine)(), int tag) );
-_PROTO( int dtq_clear_entry,     (TIMR_ENT *entry) );
-_PROTO( int dtq_rem_entry,       (int queue_id, TIMR_ENT *entry) );
-_PROTO( void dtq_start_timer,    (int time, void (*user_routine)(), int tag) );
-_PROTO( void dtq_stop_timer,     (int tag) );
+void print_date_time(void);
+int dtq_create(void);
+int dtq_delete(int queue_id);
+TIMR_ENT *dtq_add_entry(int queue_id, int time, void (*user_routine)(), int tag);
+int dtq_clear_entry(TIMR_ENT *entry);
+int dtq_rem_entry(int queue_id, TIMR_ENT *entry);
+void dtq_start_timer(int time, void (*user_routine)(), int tag);
+void dtq_stop_timer(int tag);
                          
 
 /* UTIL */
@@ -478,34 +492,34 @@ typedef struct sll {
 } SLL;
 
 
-_PROTO( void DimDummy,        () );     
-_PROTO( void conn_arr_create, (SRC_TYPES type) );
-_PROTO( int conn_get,         (void) );
-_PROTO( int conn_free,        (int conn_id) );
-_PROTO( void *arr_increase,   (void *conn_ptr, int conn_size, int n_conns) );
-_PROTO( void id_arr_create,   () );
-_PROTO( int id_get,           (void *ptr) );
-_PROTO( void id_free,         (int id) );
-_PROTO( void *id_get_ptr,     (int id) );
-_PROTO( void *id_arr_increase,(void *id_ptr, int id_size, int n_ids) );
+void DimDummy();     
+void conn_arr_create(SRC_TYPES type);
+int conn_get(void);
+int conn_free(int conn_id);
+void *arr_increase(void *conn_ptr, int conn_size, int n_conns);
+void id_arr_create();
+int id_get(void *ptr);
+void id_free(int id);
+void *id_get_ptr(int id);
+void *id_arr_increase(void *id_ptr, int id_size, int n_ids);
 
-_PROTO( void dll_init,         ( DLL *head ) );
-_PROTO( void dll_insert_queue, ( DLL *head, DLL *item ) );
-_PROTO( DLL *dll_search,       ( DLL *head, char *data, int size ) );
-_PROTO( DLL *dll_get_next,     ( DLL *head, DLL *item ) );
-_PROTO( int dll_empty,         ( DLL *head ) );
-_PROTO( void dll_remove,       ( DLL *item ) );
+void dll_init( DLL *head );
+void dll_insert_queue( DLL *head, DLL *item );
+DLL *dll_search( DLL *head, char *data, int size );
+DLL *dll_get_next( DLL *head, DLL *item );
+int dll_empty( DLL *head );
+void dll_remove( DLL *item );
 
-_PROTO( void sll_init,               ( SLL *head ) );
-_PROTO( int sll_insert_queue,        ( SLL *head, SLL *item ) );
-_PROTO( SLL *sll_search,             ( SLL *head, char *data, int size ) );
-_PROTO( SLL *sll_get_next,           ( SLL *item ) );
-_PROTO( int sll_empty,               ( SLL *head ) );
-_PROTO( int sll_remove,              ( SLL *head, SLL *item ) );
-_PROTO( SLL *sll_remove_head,        ( SLL *head ) );
-_PROTO( SLL *sll_search_next_remove, ( SLL *item, int offset, char *data, int size ) );
+void sll_init( SLL *head );
+int sll_insert_queue( SLL *head, SLL *item );
+SLL *sll_search( SLL *head, char *data, int size );
+SLL *sll_get_next( SLL *item );
+int sll_empty( SLL *head );
+int sll_remove( SLL *head, SLL *item );
+SLL *sll_remove_head( SLL *head );
+SLL *sll_search_next_remove( SLL *item, int offset, char *data, int size );
 
-_PROTO( int get_dns_node_name, ( char *node_name ) );
+int get_dns_node_name( char *node_name );
 
 #define SIZEOF_CHAR 1
 #define SIZEOF_SHORT 2
